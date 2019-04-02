@@ -119,7 +119,6 @@ def detectBW(directory,sf=1):
 
 	fid.close()
 
-
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser(description="Calculates the effective BW of a file")
 	parser.add_argument("--directory", help="Directory of the files",default="./",required=False)
