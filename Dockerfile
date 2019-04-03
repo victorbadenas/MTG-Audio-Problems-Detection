@@ -13,9 +13,10 @@ COPY python_requirements.txt /
 RUN pip3 install -r python_requirements.txt
 
 RUN git clone https://github.com/MTG/freesound-python
+RUN git clone https://github.com/MTG/essentia.git
 
 RUN cd /freesound-python && python3 setup.py install
-RUN pip3 install essentia
+RUN cd /essentia && python3 setup.py install
 
 WORKDIR /data
 
