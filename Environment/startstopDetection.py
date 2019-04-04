@@ -1,7 +1,7 @@
 import essentia.standard as estd
 from essentia import array as esarr
 
-def ess_startstopdetector(x, frame_size=1024, hop_size=512, **kwargs):
+def ess_startstop_detector(x, frame_size=1024, hop_size=512, **kwargs):
     """Breaks x into frames and computes the start and end indexes.
     
     Args:
@@ -20,4 +20,4 @@ def ess_startstopdetector(x, frame_size=1024, hop_size=512, **kwargs):
 
     startCut, stopCut = startStopCut(esarr(x))
 
-    return 100 * (startCut + stopCut) / len(x)
+    return round(100*(startCut + stopCut)/len(x), 2)
