@@ -34,19 +34,24 @@ def single_json_compute(audiopath, jsonfolder, print_flag=False):
 
     monoaudio = np.sum(audio, axis=1)/channels
 
+    frame_size = int(1024)
+    if len(monoaudio)/frame_size < 10: frame_size = int(2 ** np.ceil(np.log2(len(monoaudio)/10)))
+    hop_size = int(frame_size/2)
+
     filename = os.path.basename(audiopath)
     filename, _ = os.path.splitext(filename)
     
-    sat_starts, sat_ends, sat_perc = ess_saturation_detector(monoaudio)
-    hum_perc                       = ess_hum_detector(monoaudio)
-    clk_starts, clk_ends, clk_perc = ess_click_detector(monoaudio)
-    fs_bool, fs_perc               = ess_falsestereo_detector(audio)
-    oop_bool, oop_perc             = ess_outofphase_detector(audio)
-    nb_indexes, nb_perc            = ess_noiseburst_detector(monoaudio)
-    sil_perc                       = ess_startstop_detector(monoaudio) if len(monoaudio) > 1465 else "Audio file too short"
-    
+    sat_starts, sat_ends, sat_perc = ess_saturation_detector(monoaudio, frame_size=frame_size, hop_size=hop_size)
+    hum_perc                       = ess_hum_detector(monoaudio, frame_size=frame_size, hop_size=hop_size)
+    clk_starts, clk_ends, clk_perc = ess_click_detector(monoaudio, frame_size=frame_size, hop_size=hop_size)
+    fs_bool, fs_perc               = ess_falsestereo_detector(audio, frame_size=frame_size, hop_size=hop_size)
+    oop_bool, oop_perc             = ess_outofphase_detector(audio, frame_size=frame_size, hop_size=hop_size)
+    nb_indexes, nb_perc            = ess_noiseburst_detector(monoaudio, frame_size=frame_size, hop_size=hop_size)
+    sil_perc                       = ess_startstop_detector(monoaudio, frame_size=frame_size, hop_size=hop_size) if len(monoaudio) > 1465 else "Audio file too short"
+
     if print_flag:
         print("{0} data: \n \tfilename params: \n \tSample Rate:{1}Hz \n \tNumber of channels:{2} \n \tBit Rate:{3} \n \tCodec:{4}".format(filename,sr, channels, br, codec))
+        print("\n \tLength of the audio file: {0} \n \tFrame Size: {1} \n \tHop Size: {2}".format(len(audio), frame_size, hop_size))
         print("Saturation: \n \tStarts length: {0} \n \tEnds length: {1} \n \tPercentage of clipped frames: {2}%".format(len(sat_starts), len(sat_ends), sat_perc))
         print("Hum: \n \tPercentage of the file with Hum: {}%".format(hum_perc))
         print("Clicks: \n \tStarts length: {0} \n \tEnds length: {1} \n \tPercentage of clipped frames: {2}%".format(len(clk_starts), len(clk_ends), clk_perc))
@@ -54,6 +59,7 @@ def single_json_compute(audiopath, jsonfolder, print_flag=False):
         print("FalseStereo: \n \tIs falseStereo?: {0} \n \tPercentage of frames with correlation==1: {1}%".format(fs_bool,fs_perc))
         print("OutofPhase: \n \tIs outofphase?: {0} \n \tPercentage of frames with correlation<-0.8: {1}%".format(oop_bool, oop_perc))
         print("NoiseBursts: \n \tIndexes length:{0} \n \tPercentage of problematic frames: {1}%".format(len(nb_indexes),nb_perc))
+        print("________________________________________________________________________________________________________________________________________-")
     
     json_dict = {
         "Saturation" : {
