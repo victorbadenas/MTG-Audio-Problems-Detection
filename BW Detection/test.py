@@ -85,7 +85,7 @@ def findEnvelopes(s):
 	#Return everything
 	return q_u,q_l
 
-def detectBW(fpath, frame_size=1024, hop_size=512):
+def detectBW(fpath, frame_size=256, hop_size=128, floor_db=-30):
 
 	relativeBW = -1
 
@@ -93,22 +93,42 @@ def detectBW(fpath, frame_size=1024, hop_size=512):
 	if extension != ".wav": raise ValueError("file must be wav")
 
 	print(fpath)
-	x, SR, channels, _, br, _ = estd.AudioLoader(fpath)()
+	x, SR, channels, _, br, _ = estd.AudioLoader(filename = fpath)()
 
+	if channels != 1: x = (x[:,0] + x[:,1]) / 2
+	
 	print(x.shape, SR, channels, br)
+	
+	effectiveBW = []
+	window = estd.Windowing(size=frame_size, type="hann")
 
-	#if channels != 1:
-	#	x = (x[:,0] + x[:,1])/2
-	
-	
+	for frame in estd.FrameGenerator(x, frameSize=frame_size, hopSize=hop_size, startFromZero=True):
+		
+		frame = window(frame)
+		frame_fft = estd.FFT(size = frame_size)(frame)
+		frame_fft_db = 20*np.log10(abs(frame_fft))
+		floor_db_relative = max(frame_fft_db) + floor_db
+		print(floor_db_relative)
+		frame_fft_db[frame_fft_db<floor_db_relative] = -120
+		f = np.arange(int(frame_size/2)+1)/frame_size * SR
 
+		xp, yp = get_peaks(frame_fft_db, f)
+		xp = np.append(xp,f[-1])
+		xp = np.append(0,xp)
+		yp = np.append(yp,frame_fft_db[-1])
+		yp = np.append(frame_fft_db[0],yp)
+		
+		interp_func = interp1d(xp,yp,kind="linear")
+		ynew = interp_func(f)
+
+		plt.plot(f, ynew)
+		plt.show()
 	
-	#plt.plot(f,mX[:int(N/2)])
+	#plt.plot(x)
 	#plt.plot(f,smX[:int(N/2)],color='r')
 	#plt.savefig(fname+".png")
+	#plt.show()
 	#plt.clf()
-
-	#print("Progress:" + "%.2f" % round((i+1)*100/numberoffiles,2) + " %")
 
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser(description="Calculates the effective BW of a file")
@@ -116,3 +136,7 @@ if __name__ == "__main__":
 	parser.add_argument("--smoothingfactor", help="how many times the upper envelope is computed in itself (>1)",default=1,required=False)
 	args = parser.parse_args()
 	detectBW(args.fpath)
+
+#python3 test.py ../Dataset/BW\ detection/_m1_DistNT_65.wav
+#python3 test.py ../Dataset/BW\ detection/Door\ of\ flat\ close\ int\ block\ of\ flats.wav
+#python3 test.py ../Dataset/BW\ detection/Door\ open\ close\ int\ flat\ soft\ 2.wav
