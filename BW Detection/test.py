@@ -3,7 +3,7 @@ import sys
 import numpy as np
 import matplotlib.pyplot as plt
 import argparse
-from scipy.io import wavfile
+import essentia.standard as estd
 from scipy.signal import hilbert, find_peaks, get_window
 
 from numpy import array, sign, zeros
@@ -85,56 +85,34 @@ def findEnvelopes(s):
 	#Return everything
 	return q_u,q_l
 
-def detectBW(directory,sf=2):
+def detectBW(fpath, frame_size=1024, hop_size=512):
 
-	numberoffiles = np.sum([1 for file in os.listdir(directory)])
-	# numberofsounds = np.sum(numberofsounds)
+	relativeBW = -1
 
-	for i,fname in enumerate(os.listdir(directory)):
-		relativeBW = -1
-		SR = -1
-		fname = os.path.join(directory,fname)
+	_, extension = os.path.splitext(fpath)
+	if extension != ".wav": raise ValueError("file must be wav")
 
-		_, extension = os.path.splitext(fname)
-		if extension != ".wav":
-			continue
+	print(fpath)
+	x, SR, channels, _, br, _ = estd.AudioLoader(fpath)()
 
-		fs,x = wavfile.read(fname, mmap=True)
-		samples = x.shape[0]
-		channels = x.shape[1] if len(x.shape) > 1 else 1
+	print(x.shape, SR, channels, br)
 
-		if channels != 1:
-			x = (x[:,0] + x[:,1])/2
+	#if channels != 1:
+	#	x = (x[:,0] + x[:,1])/2
+	
+	
 
-		N = int(pow(2, np.ceil(np.log2(len(x)))))
+	
+	#plt.plot(f,mX[:int(N/2)])
+	#plt.plot(f,smX[:int(N/2)],color='r')
+	#plt.savefig(fname+".png")
+	#plt.clf()
 
-		f = np.arange(int(N/2))/N*fs
-		x = np.floor(2*x)/2**15
-		x = np.append(x,np.zeros(N-len(x)))
-		X = np.fft.fft(x)/np.sum(x)
-		mX = 20*np.log10(np.abs(X))
-		
-		#mX = mX * np.log(np.arange(N))
-		mX = normalize(mX,log=True)
-		smX = mX
-		for _ in range(sf):
-			smX,_ = findEnvelopes(smX)
-		
-		#smX = smooth_function(smX, window_type= 'hann', window_len = 30)
-		#smX = normalize(smX,log=True)
-		#xpeaks, ypeaks = get_peaks(smX[:int(N/2)],f)
-
-		
-		plt.plot(f,mX[:int(N/2)])
-		plt.plot(f,smX[:int(N/2)],color='r')
-		plt.savefig(fname+".png")
-		plt.clf()
-
-		print("Progress:" + "%.2f" % round((i+1)*100/numberoffiles,2) + " %")
+	#print("Progress:" + "%.2f" % round((i+1)*100/numberoffiles,2) + " %")
 
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser(description="Calculates the effective BW of a file")
-	parser.add_argument("--directory", help="Directory of the files",default="./",required=False)
+	parser.add_argument("fpath", help="relative path to the file")
 	parser.add_argument("--smoothingfactor", help="how many times the upper envelope is computed in itself (>1)",default=1,required=False)
 	args = parser.parse_args()
-	detectBW(args.directory)
+	detectBW(args.fpath)
