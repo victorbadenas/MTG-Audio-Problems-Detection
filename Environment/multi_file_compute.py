@@ -15,8 +15,11 @@ def multi_file_compute(audiofolder, jsonfolder):
 
     """
     df = pd.DataFrame()
+
     for file in os.listdir(audiofolder):
+
         filename, extension = os.path.splitext(file)
+
         if extension in (".mp3",".aiff"):
             print("mp3 or aiff")
             audiopath_src = os.path.join(audiofolder, file)
@@ -40,7 +43,9 @@ def multi_file_compute(audiofolder, jsonfolder):
                     df_dict[name] = [json_dict[problem][feature]]
 
             df_file = pd.DataFrame(df_dict)
+
             df = df.append(df_file)
+            
     df = df.set_index("Name")
 
     with open(jsonfolder+"all_files.tsv",'w') as tsvfile:
