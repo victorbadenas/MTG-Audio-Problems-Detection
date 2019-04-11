@@ -91,7 +91,7 @@ def compute_fc(std_arr:list, mean_arr:list, f:list, th:float):
 	std_pos = get_last_true_index( normalise(std_arr-min(std_arr)) < th)
 	mean_pos = get_last_true_index( normalise(mean_arr-min(mean_arr)) < th)
 
-	return max(f[std_pos], f[mean_pos])
+	return min(f[std_pos], f[mean_pos])
 
 def compute_spectral_envelope(frame_fft:list, xticks:list, kind="linear"):
 	"""Compute the spectral envelope through a peak interpolation method
@@ -118,30 +118,60 @@ def compute_spectral_envelope(frame_fft:list, xticks:list, kind="linear"):
 	hp = np.append(hp,frame_fft[-1]) ; hp = np.append(frame_fft[0],hp) #appending the first and last value of the function
 	return interp1d(xp,hp,kind=kind)(xticks) #interpolating and returning
 
-def compute_confidence(audio:list, fc:float, SR:int):
+def compute_confidence(audio:list, frame_size:int, hop_size:int, fc:float, SR:int):
 	"""Computes the confidence of the result by calculation the spectral power in
 		the part of the spectrum from fc to fs/2 and comparing it to the whole spectral density
 
 	Args:
-		
-	
-	Kwargs:
-		
+		audio: (list) iterable with the mono information of the audio file
+		fc: (float) predicted cut frequency
+		SR: (int/float) sample rate
 
 	Returns:
-		
+		(float) confidence value
 	"""
-	audio = estd.Windowing(size=len(audio), type="hann")(audio)
-	N = int(2**(np.ceil(np.log2(len(audio)))))
-	audio = np.append(audio,np.zeros(N-len(audio)))
-	audio = esarr(audio)
+
+	#confidence by number of correct frames
 	tfX = abs(estd.FFT()(audio))
-	f = np.arange(int(len(audio)/2)+1)/len(audio)*SR
-	fck = int(len(tfX) * fc/(0.5*SR))
-	#plt.plot(f, tfX)
-	#plt.axvline(x=fc,color="r")
-	#plt.show()
-	return 1-sum(tfX[fck:]**2)/sum(tfX**2)
+	tfX_plot = 20*np.log10(tfX)
+	tfX_plot = normalise(tfX_plot, log=True)
+
+	fft = estd.FFT(size = frame_size) #declare FFT function
+	window = estd.Windowing(size=frame_size, type="hann") #declare windowing function
+	fck = int(2 * frame_size * fc / SR)
+
+	if fck == 0: return 0, tfX_plot
+	if fck == frame_size: return 1, tfX_plot
+
+	correct_frames = 0
+	all_frames = 0
+	for frame in estd.FrameGenerator(audio, frameSize=frame_size, hopSize=hop_size, startFromZero=True):
+		
+		all_frames += 1
+		frame = window(frame) #apply window to the frame
+		frame_fft = abs(fft(frame)) #calculate frame fft values in db
+		upper_mean = sum(frame_fft[fck:] ** 2)
+		lower_mean = sum(frame_fft[:fck-1] ** 2)
+		print(upper_mean/lower_mean)
+		if upper_mean/lower_mean < 1e-5:
+			correct_frames += 1
+				
+	return np.round(correct_frames/all_frames, decimals=2) , tfX_plot
+
+	#confidence  by ratio of energies
+	#audio = estd.Windowing(size=len(audio), type="hann")(audio)
+	#N = int(2**(np.ceil(np.log2(len(audio)))))
+	#audio = np.append(audio,np.zeros(N-len(audio)))
+	#audio = esarr(audio)
+	#tfX = abs(estd.FFT()(audio))
+	#f = np.arange(int(len(audio)/2) + 1) * SR / len(audio)
+	#fck = int(2 * len(tfX) * fc / SR)
+
+	#tfX_plot = 20*np.log10(tfX)
+	#tfX_plot[ tfX_plot < (max(tfX_plot) + floor_db)] = max(tfX_plot) + floor_db
+	#tfX_plot = normalise(tfX_plot, log=True)
+	
+	#return 1-sum(tfX[fck:] ** 2)/sum(tfX ** 2), tfX_plot
 
 def detectBW(fpath:str, frame_size:float, hop_size:float, floor_db:float, th:float, oversample_f:int):
 
@@ -149,19 +179,20 @@ def detectBW(fpath:str, frame_size:float, hop_size:float, floor_db:float, th:flo
 	if not is_power2(oversample_f): raise ValueError("oversample factor can only be 1, 2 or 4") #check if the oversample factor is a power of two
 
 	#audio loader returns x, sample_rate, number_channels, md5, bit_rate, codec, of which only the first 3 are needed
-	x, SR = estd.AudioLoader(filename = fpath)()[:2]
+	audio, SR = estd.AudioLoader(filename = fpath)()[:2]
 	#print(x.shape,SR) 
 
-	if x.shape[1] != 1: x = (x[:,0] + x[:,1]) / 2 #if stereo: downmix to mono
+	if audio.shape[1] != 1: audio = (audio[:,0] + audio[:,1]) / 2 #if stereo: downmix to mono
 	
 	frame_size *= oversample_f #if an oversample factor is desired, 
 	f = np.arange(int(frame_size/2)+1)/frame_size * SR #initialize frequency vector or xticks
+
 
 	interpolated_signals = [] #initialize interpolated_signals array
 	fft = estd.FFT(size = frame_size) #declare FFT function
 	window = estd.Windowing(size=frame_size, type="hann") #declare windowing function
 
-	for frame in estd.FrameGenerator(x, frameSize=frame_size, hopSize=hop_size, startFromZero=True):
+	for frame in estd.FrameGenerator(audio, frameSize=frame_size, hopSize=hop_size, startFromZero=True):
 		
 		frame = window(frame) #apply window to the frame
 		frame_fft_db = 20 * np.log10(abs(fft(frame) + eps)) #calculate frame fft values in db
@@ -174,24 +205,46 @@ def detectBW(fpath:str, frame_size:float, hop_size:float, floor_db:float, th:flo
 	std_arr = np.std(np.array(interpolated_signals), axis = 0) #calculate the stardard deviation of each bin frequency in the interpolated spectrums in db
 	mean_arr = np.mean((interpolated_signals), axis = 0) #calculate the mean of each bin frequency in the interpolated spectrums in db
 
+	comb_arr = mean_arr + std_arr
+	comb_arr = normalise(comb_arr-min(comb_arr))
+
 	std_arr = normalise(std_arr, log=False)
 	mean_arr = normalise(mean_arr, log=True)
 
-	fc = compute_fc(std_arr, mean_arr, f, th) #apply the threshold and find the cut frequency
-	confidence = compute_confidence(x,fc,SR) #calculate the confidence of the algorithm for the predicted fc
+	#fc = compute_fc(std_arr, mean_arr, f, th) #apply the threshold and find the cut frequency
+	fc = f[get_last_true_index( comb_arr < th)]
+	confidence, tfX_plot = compute_confidence(audio, frame_size, hop_size, fc, SR) #calculate the confidence of the algorithm for the predicted fc
 
 	print("fc:", fc, "confidence:", confidence)
-
-	#plot of the std and mean plots.
 	fig,ax = plt.subplots(2,1,figsize=(10,8))
-	ax[0].plot(f,mean_arr)
-	ax[0].set_title("mean")
+	ax[0].plot(f,comb_arr)
 	ax[0].axvline(x=fc,color="r")
+	ax[0].set_xlim(left=20,right=f[-1])
+
+	ax[1].plot(np.arange(int(len(tfX_plot))) * SR / len(tfX_plot) / 2,tfX_plot) 
+	ax[1].set_title("semilog spectrum")
+	ax[1].axvline(x=fc,color="r")
+	ax[1].set_xlim(left=20,right=f[-1])
+
+	plt.show()
+	"""
+	mean_arr_plot = normalise(mean_arr - min(mean_arr))
+	#plot of the std and mean plots.
+	fig,ax = plt.subplots(3,1,figsize=(10,8))
+	ax[0].set_title("mean")
+	ax[0].plot(f,mean_arr_plot)
+	ax[0].axvline(x=fc,color="r")
+	ax[0].set_xlim(left=20,right=f[-1])
 	ax[1].plot(f,std_arr)
 	ax[1].set_title("standard deviation")
 	ax[1].axvline(x=fc,color="r")
+	ax[1].set_xlim(left=20,right=f[-1])
+	ax[2].plot(np.arange(int(len(tfX_plot))) * SR / len(tfX_plot) / 2,tfX_plot) 
+	ax[2].set_title("semilog spectrum")
+	ax[2].axvline(x=fc,color="r")
+	ax[2].set_xlim(left=20,right=f[-1])
 	plt.show()
-	#plt.clf()
+	plt.clf()"""
 
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser(description="Calculates the effective BW of a file")
@@ -199,7 +252,7 @@ if __name__ == "__main__":
 	parser.add_argument("--frame_size", help="frame_size for the analysis fft (default=256)",default=256,required=False)
 	parser.add_argument("--hop_size", help="hop_size for the analysis fft (default=128)",default=128,required=False)
 	parser.add_argument("--floor_db", help="db value that will be considered as -inf",default=-60,required=False)
-	parser.add_argument("--th", help="threshold for the standard deviation to be considered in the detection process linear [0,1]",default=0.4,required=False)
+	parser.add_argument("--th", help="threshold for the standard deviation to be considered in the detection process linear [0,1]",default=0.1,required=False) #default = 0.18 is ok
 	parser.add_argument("--oversample", help="(int) factor for the oversampling in frequency domain. Must be a powerr of 2",default=1,required=False)
 	args = parser.parse_args()
 	detectBW(args.fpath, args.frame_size, args.hop_size, args.floor_db, args.th, int(args.oversample))
