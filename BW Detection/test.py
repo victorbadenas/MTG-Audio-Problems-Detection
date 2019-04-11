@@ -36,54 +36,54 @@ def normalise(sig:list, log=False):
 	return np.array(sig) / max(sig) if not log else (np.array(sig) - max(sig))
 
 def get_peaks(sig:list, xticks:list):
-    """Returns the x,y values of the peaks in sig
+	"""Returns the x,y values of the peaks in sig
 
-    Args:
-        sig: numpy.array of the signal of which to fing the peaks
-        xticks: numpy.array of the corresponding x axis values for sig
+	Args:
+		sig: numpy.array of the signal of which to fing the peaks
+		xticks: numpy.array of the corresponding x axis values for sig
 
-    Returns:
-        yval: y values of the peaks
-        xval: x values of the peaks
-    """
+	Returns:
+		yval: y values of the peaks
+		xval: x values of the peaks
+	"""
 
-    if len(sig) != len(xticks):
-        raise ValueError("xticks and sig must have the same length")
+	if len(sig) != len(xticks):
+		raise ValueError("xticks and sig must have the same length")
 
-    peaks, _ = scipy.signal.find_peaks(sig) #get the index values of the local maxima of sig
+	peaks, _ = scipy.signal.find_peaks(sig) #get the index values of the local maxima of sig
 
-    tuplelist = [(a, b) for a, b in zip(xticks[peaks], sig[peaks])]
-    tuplelist.sort(key=lambda x: x[1], reverse=True)
+	tuplelist = [(a, b) for a, b in zip(xticks[peaks], sig[peaks])]
+	tuplelist.sort(key=lambda x: x[1], reverse=True)
 
-    xval = [a for a, b in tuplelist]
-    yval = [b for a, b in tuplelist]
+	xval = [a for a, b in tuplelist]
+	yval = [b for a, b in tuplelist]
 
-    return xval, yval
+	return xval, yval
 
 def get_last_true_index(bool_list:list):
 	"""Given a bool vector, returns the position of the last True value in the array
 
-    Args:
-        bool_list: iterable with boolean values
+	Args:
+		bool_list: iterable with boolean values
 
-    Returns:
-        (int) index position of the last True value in the array
-    """
+	Returns:
+		(int) index position of the last True value in the array
+	"""
 	for i,item in enumerate(reversed(bool_list)):
 		if not item: return len(bool_list)-1-i
 
 def compute_fc(std_arr:list, mean_arr:list, f:list, th:float):
 	"""Applies the threshold and computes the limit frequency
 
-    Args:
-        std_arr: numpy.array of the standard deviation of the bins
-        mean_arr: numpy.array of the mean of the bins
+	Args:
+		std_arr: numpy.array of the standard deviation of the bins
+		mean_arr: numpy.array of the mean of the bins
 		f: numpy.array of the xticks for the two lists above
 		th: (float) threshold for the desicion
 
-    Returns:
-        least restrictive frequency of the two calculations
-    """
+	Returns:
+		least restrictive frequency of the two calculations
+	"""
 	if not len(std_arr) == len(mean_arr) == len(f): raise ValueError("length of the vectors must be equal")	
 
 	#create a temporal array with normalise(std_arr-min(std_arr)) where the values are constrained between 0 and 1,
@@ -93,25 +93,55 @@ def compute_fc(std_arr:list, mean_arr:list, f:list, th:float):
 
 	return max(f[std_pos], f[mean_pos])
 
-def compute_spectral_envelope(frame:list, f:list):
-	fp, hp = get_peaks(frame, f)
-	fp = np.append(fp,f[-1]) ; fp = np.append(0,fp)
-	hp = np.append(hp,frame[-1]) ; hp = np.append(frame[0],hp)
-	return interp1d(fp,hp,kind="linear")(f)
+def compute_spectral_envelope(frame_fft:list, xticks:list, kind="linear"):
+	"""Compute the spectral envelope through a peak interpolation method
 
-def compute_confidence(x:list, fc:float, SR:int):
+	Args:
+		frame_fft: (list) iterable with the mono samples of a frame
+		xticks: (list) xticks of the frame
+	
+	Kwargs:
+		kind: (str) Specifies the kind of interpolation as a string 
+			(‘linear’, ‘nearest’, ‘zero’, ‘slinear’, ‘quadratic’, ‘cubic’, 
+			‘previous’, ‘next’, where ‘zero’, ‘slinear’, ‘quadratic’ and 
+			‘cubic’ refer to a spline interpolation of zeroth, first, 
+			second or third order; ‘previous’ and ‘next’ simply return the 
+			previous or next value of the point) or as an integer specifying 
+			the order of the spline interpolator to use. (Default = ‘linear’).
 
-	x = estd.Windowing(size=len(x), type="hann")(x)
-	N = int(2**(np.ceil(np.log2(len(x)))))
-	x = np.append(x,np.zeros(N-len(x)))
-	x = esarr(x)
-	tfX = abs(estd.FFT()(x))
-	f = np.arange(int(len(x)/2)+1)/len(x)*SR
+	Returns:
+		(list) of the same length as frame_fft and xticks containing the 
+			interpolated spectrum.
+	"""
+	xp, hp = get_peaks(frame_fft, xticks) #compute the values of the local maxima of the function
+	xp = np.append(xp,xticks[-1]) ; xp = np.append(0,xp) #appending the first value and last value in xticks
+	hp = np.append(hp,frame_fft[-1]) ; hp = np.append(frame_fft[0],hp) #appending the first and last value of the function
+	return interp1d(xp,hp,kind=kind)(xticks) #interpolating and returning
+
+def compute_confidence(audio:list, fc:float, SR:int):
+	"""Computes the confidence of the result by calculation the spectral power in
+		the part of the spectrum from fc to fs/2 and comparing it to the whole spectral density
+
+	Args:
+		
+	
+	Kwargs:
+		
+
+	Returns:
+		
+	"""
+	audio = estd.Windowing(size=len(audio), type="hann")(audio)
+	N = int(2**(np.ceil(np.log2(len(audio)))))
+	audio = np.append(audio,np.zeros(N-len(audio)))
+	audio = esarr(audio)
+	tfX = abs(estd.FFT()(audio))
+	f = np.arange(int(len(audio)/2)+1)/len(audio)*SR
 	fck = int(len(tfX) * fc/(0.5*SR))
 	#plt.plot(f, tfX)
 	#plt.axvline(x=fc,color="r")
 	#plt.show()
-	return 1-sum(tfX[fck:])/sum(tfX)
+	return 1-sum(tfX[fck:]**2)/sum(tfX**2)
 
 def detectBW(fpath:str, frame_size:float, hop_size:float, floor_db:float, th:float, oversample_f:int):
 
@@ -120,7 +150,7 @@ def detectBW(fpath:str, frame_size:float, hop_size:float, floor_db:float, th:flo
 
 	#audio loader returns x, sample_rate, number_channels, md5, bit_rate, codec, of which only the first 3 are needed
 	x, SR = estd.AudioLoader(filename = fpath)()[:2]
-	print(x.shape,SR) 
+	#print(x.shape,SR) 
 
 	if x.shape[1] != 1: x = (x[:,0] + x[:,1]) / 2 #if stereo: downmix to mono
 	
@@ -136,9 +166,9 @@ def detectBW(fpath:str, frame_size:float, hop_size:float, floor_db:float, th:flo
 		frame = window(frame) #apply window to the frame
 		frame_fft_db = 20 * np.log10(abs(fft(frame) + eps)) #calculate frame fft values in db
 		#each value less than the threshold is set to 30 dB lower than the threshold
-		print(max(frame_fft_db)-120)
+		#print(max(frame_fft_db)-120)
 		frame_fft_db[ frame_fft_db < (max(frame_fft_db) + floor_db)] = max(frame_fft_db) + floor_db
-		interp_frame = compute_spectral_envelope(frame_fft_db, f) #compute the linear interpolation between the values of the maxima of the spectrum
+		interp_frame = compute_spectral_envelope(frame_fft_db, f, "linear") #compute the linear interpolation between the values of the maxima of the spectrum
 		interpolated_signals.append(interp_frame) #append the values to window
 	
 	std_arr = np.std(np.array(interpolated_signals), axis = 0) #calculate the stardard deviation of each bin frequency in the interpolated spectrums in db
