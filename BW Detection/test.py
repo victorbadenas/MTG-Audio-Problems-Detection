@@ -35,6 +35,13 @@ def normalise(sig:list, log=False):
 	"""
 	return np.array(sig) / max(sig) if not log else (np.array(sig) - max(sig))
 
+def log_transform(sig:list):
+	"""
+
+	"""
+	sig = np.array(sig)
+	return np.log(sig + 1) / np.log(2)
+
 def get_peaks(sig:list, xticks:list):
 	"""Returns the x,y values of the peaks in sig
 
@@ -152,7 +159,6 @@ def compute_confidence(audio:list, frame_size:int, hop_size:int, fc:float, SR:in
 		frame_fft = abs(fft(frame)) #calculate frame fft values in db
 		upper_mean = sum(frame_fft[fck:] ** 2)
 		lower_mean = sum(frame_fft[:fck-1] ** 2)
-		print(upper_mean/lower_mean)
 		if upper_mean/lower_mean < 1e-5:
 			correct_frames += 1
 				
@@ -207,12 +213,13 @@ def detectBW(fpath:str, frame_size:float, hop_size:float, floor_db:float, th:flo
 
 	comb_arr = mean_arr + std_arr
 	comb_arr = normalise(comb_arr-min(comb_arr))
+	comb_arr = log_transform(comb_arr)
 
 	std_arr = normalise(std_arr, log=False)
 	mean_arr = normalise(mean_arr, log=True)
 
 	#fc = compute_fc(std_arr, mean_arr, f, th) #apply the threshold and find the cut frequency
-	fc = f[get_last_true_index( comb_arr < th)]
+	fc = f[get_last_true_index(comb_arr < th)]
 	confidence, tfX_plot = compute_confidence(audio, frame_size, hop_size, fc, SR) #calculate the confidence of the algorithm for the predicted fc
 
 	print("fc:", fc, "confidence:", confidence)
@@ -227,24 +234,6 @@ def detectBW(fpath:str, frame_size:float, hop_size:float, floor_db:float, th:flo
 	ax[1].set_xlim(left=20,right=f[-1])
 
 	plt.show()
-	"""
-	mean_arr_plot = normalise(mean_arr - min(mean_arr))
-	#plot of the std and mean plots.
-	fig,ax = plt.subplots(3,1,figsize=(10,8))
-	ax[0].set_title("mean")
-	ax[0].plot(f,mean_arr_plot)
-	ax[0].axvline(x=fc,color="r")
-	ax[0].set_xlim(left=20,right=f[-1])
-	ax[1].plot(f,std_arr)
-	ax[1].set_title("standard deviation")
-	ax[1].axvline(x=fc,color="r")
-	ax[1].set_xlim(left=20,right=f[-1])
-	ax[2].plot(np.arange(int(len(tfX_plot))) * SR / len(tfX_plot) / 2,tfX_plot) 
-	ax[2].set_title("semilog spectrum")
-	ax[2].axvline(x=fc,color="r")
-	ax[2].set_xlim(left=20,right=f[-1])
-	plt.show()
-	plt.clf()"""
 
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser(description="Calculates the effective BW of a file")
@@ -252,7 +241,7 @@ if __name__ == "__main__":
 	parser.add_argument("--frame_size", help="frame_size for the analysis fft (default=256)",default=256,required=False)
 	parser.add_argument("--hop_size", help="hop_size for the analysis fft (default=128)",default=128,required=False)
 	parser.add_argument("--floor_db", help="db value that will be considered as -inf",default=-60,required=False)
-	parser.add_argument("--th", help="threshold for the standard deviation to be considered in the detection process linear [0,1]",default=0.1,required=False) #default = 0.18 is ok
+	parser.add_argument("--th", help="threshold for the standard deviation to be considered in the detection process linear [0,1]",default=0.24, required=False) #default = 0.24 is ok
 	parser.add_argument("--oversample", help="(int) factor for the oversampling in frequency domain. Must be a powerr of 2",default=1,required=False)
 	args = parser.parse_args()
 	detectBW(args.fpath, args.frame_size, args.hop_size, args.floor_db, args.th, int(args.oversample))
