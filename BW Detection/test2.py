@@ -194,46 +194,52 @@ def detectBW(fpath:str, frame_size:float, hop_size:float, floor_db:float, th:flo
 	frame_size *= oversample_f #if an oversample factor is desired, 
 	f = np.arange(int(frame_size/2)+1)/frame_size * SR #initialize frequency vector or xticks
 
-
+	fc_index_arr = []
 	interpolated_signals = [] #initialize interpolated_signals array
 	fft = estd.FFT(size = frame_size) #declare FFT function
 	window = estd.Windowing(size=frame_size, type="hann") #declare windowing function
 
-	for frame in estd.FrameGenerator(audio, frameSize=frame_size, hopSize=hop_size, startFromZero=True):
+	for i,frame in enumerate(estd.FrameGenerator(audio, frameSize=frame_size, hopSize=hop_size, startFromZero=True)):
 		
 		frame = window(frame) #apply window to the frame
 		frame_fft_db = 20 * np.log10(abs(fft(frame) + eps)) #calculate frame fft values in db
 		#each value less than the threshold is set to 30 dB lower than the threshold
 		#print(max(frame_fft_db)-120)
-		frame_fft_db[ frame_fft_db < (max(frame_fft_db) + floor_db)] = max(frame_fft_db) + floor_db
+		
 		interp_frame = compute_spectral_envelope(frame_fft_db, f, "linear") #compute the linear interpolation between the values of the maxima of the spectrum
+		interp_frame[ interp_frame < (max(interp_frame) + floor_db)] = max(interp_frame) + floor_db
+
+		d = np.diff(interp_frame)[:-2]
+		d = np.append(d,np.zeros(3))
+		d[d>0] = 0
+		d[d!=min(d)]=0
+		
+		fc_index = get_last_true_index(d!=0)
+		fc_index_arr.append(fc_index)
 		interpolated_signals.append(interp_frame) #append the values to window
+		
+	mean_arr = np.mean((interpolated_signals), axis = 0)
+	fcy = np.zeros(len(f))
+	for idx in fc_index_arr:
+		fcy[idx] += 1
 	
-	std_arr = np.std(np.array(interpolated_signals), axis = 0) #calculate the stardard deviation of each bin frequency in the interpolated spectrums in db
-	mean_arr = np.mean((interpolated_signals), axis = 0) #calculate the mean of each bin frequency in the interpolated spectrums in db
+	selected_bins = np.array([i for i,b in enumerate(fcy > (0.05 * sum(fcy))) if b])
+	print(selected_bins)
+	if len(selected_bins) != 0:
+		most_likely_bin = int(np.mean(selected_bins))
+		mean_fc = f[most_likely_bin]
+		conf = 1-sum(abs(selected_bins-most_likely_bin))/len(f)
+	else:
+		conf = 0
+		mean_fc = SR/2
 
-	comb_arr = mean_arr + std_arr
-	comb_arr = normalise(comb_arr-min(comb_arr))
-	comb_arr = log_transform(comb_arr)
+	print("mean_fc: ",mean_fc,"conf: ",conf)
 
-	std_arr = normalise(std_arr, log=False)
-	mean_arr = normalise(mean_arr, log=True)
-
-	#fc = compute_fc(std_arr, mean_arr, f, th) #apply the threshold and find the cut frequency
-	fc = f[get_last_true_index(comb_arr > th)]
-	confidence, tfX_plot = compute_confidence(audio, frame_size, hop_size, fc, SR) #calculate the confidence of the algorithm for the predicted fc
-
-	print("fc:", fc, "confidence:", confidence)
-	fig,ax = plt.subplots(2,1,figsize=(10,8))
-	ax[0].plot(f,comb_arr)
-	ax[0].axvline(x=fc,color="r")
-	ax[0].set_xlim(left=20,right=f[-1])
-
-	ax[1].plot(np.arange(int(len(tfX_plot))) * SR / len(tfX_plot) / 2,tfX_plot) 
-	ax[1].set_title("semilog spectrum")
-	ax[1].axvline(x=fc,color="r")
-	ax[1].set_xlim(left=20,right=f[-1])
-
+	fig, ax = plt.subplots(3,1,figsize=(15,9))
+	ax[0].plot(fc_index_arr,"x")
+	ax[1].stem(f,fcy)
+	ax[2].plot(f, mean_arr)
+	ax[2].axvline(x=mean_fc,color="r")
 	plt.show()
 
 if __name__ == "__main__":
@@ -243,7 +249,7 @@ if __name__ == "__main__":
 	parser.add_argument("--hop_size", help="hop_size for the analysis fft (default=128)",default=128,required=False)
 	parser.add_argument("--floor_db", help="db value that will be considered as -inf",default=-90,required=False)
 	parser.add_argument("--th", help="threshold for the standard deviation to be considered in the detection process linear [0,1]",default=0.4, required=False) #default = 0.24 is ok
-	parser.add_argument("--oversample", help="(int) factor for the oversampling in frequency domain. Must be a powerr of 2",default=1,required=False)
+	parser.add_argument("--oversample", help="(int) factor for the oversampling in frequency domain. Must be a powerr of 2",default=4,required=False)
 	args = parser.parse_args()
 	detectBW(args.fpath, args.frame_size, args.hop_size, args.floor_db, args.th, int(args.oversample))
 
