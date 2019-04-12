@@ -35,13 +35,6 @@ def normalise(sig:list, log=False):
 	"""
 	return np.array(sig) / max(sig) if not log else (np.array(sig) - max(sig))
 
-def log_transform(sig:list):
-	"""
-
-	"""
-	sig = np.array(sig)
-	return np.log(sig + 1) / np.log(2)
-
 def get_peaks(sig:list, xticks:list):
 	"""Returns the x,y values of the peaks in sig
 
@@ -79,26 +72,33 @@ def get_last_true_index(bool_list:list):
 	for i,item in enumerate(reversed(bool_list)):
 		if item: return len(bool_list)-1-i
 
-def compute_fc(std_arr:list, mean_arr:list, f:list, th:float):
-	"""Applies the threshold and computes the limit frequency
+def compute_fc(interp_frame:list):
+	
+	d = np.diff(interp_frame)[:-2]
+	d = np.append(d,np.zeros(3))
+	d[d>0] = 0
+	d[d!=min(d)]=0
+	
+	return get_last_true_index(d!=0)
 
-	Args:
-		std_arr: numpy.array of the standard deviation of the bins
-		mean_arr: numpy.array of the mean of the bins
-		f: numpy.array of the xticks for the two lists above
-		th: (float) threshold for the desicion
+def compute_mean_fc(hist:list, f:list, SR:float):
+	selected_bins = np.array([i for i,b in enumerate(hist > (0.05 * sum(hist))) if b])
+	if len(selected_bins) != 0:
+		most_likely_bin = int(np.mean(selected_bins))
+		mean_fc = f[most_likely_bin]
+		conf = 1-sum(abs(selected_bins-most_likely_bin))/len(hist)
+	else:
+		most_likely_bin = len(hist)
+		mean_fc = SR/2
+		conf = 0
+	
+	if conf > 0.5:
+		if mean_fc < (0.9 * SR/2):
+			binary_result = True
+	else:
+		binary_result = False
 
-	Returns:
-		least restrictive frequency of the two calculations
-	"""
-	if not len(std_arr) == len(mean_arr) == len(f): raise ValueError("length of the vectors must be equal")	
-
-	#create a temporal array with normalise(std_arr-min(std_arr)) where the values are constrained between 0 and 1,
-	#thresholding and get the last value that salisfies the condition from the end.
-	std_pos = get_last_true_index( normalise(std_arr-min(std_arr)) < th)
-	mean_pos = get_last_true_index( normalise(mean_arr-min(mean_arr)) < th)
-
-	return min(f[std_pos], f[mean_pos])
+	return mean_fc, conf, binary_result
 
 def compute_spectral_envelope(frame_fft:list, xticks:list, kind="linear"):
 	"""Compute the spectral envelope through a peak interpolation method
@@ -138,47 +138,22 @@ def compute_confidence(audio:list, frame_size:int, hop_size:int, fc:float, SR:in
 		(float) confidence value
 	"""
 
-	#confidence by number of correct frames
-	if len(audio)%2 == 1: audio_even = audio[:-1]
-	tfX = abs(estd.FFT()(audio_even))
-	tfX_plot = 20*np.log10(tfX)
-	tfX_plot = normalise(tfX_plot, log=True)
-
-	fft = estd.FFT(size = frame_size) #declare FFT function
-	window = estd.Windowing(size=frame_size, type="hann") #declare windowing function
-	fck = int(2 * frame_size * fc / SR)
-
-	if fck == 0: return 0, tfX_plot
-	if fck == frame_size: return 1, tfX_plot
-
-	correct_frames = 0
-	all_frames = 0
-	for frame in estd.FrameGenerator(audio, frameSize=frame_size, hopSize=hop_size, startFromZero=True):
-		
-		all_frames += 1
-		frame = window(frame) #apply window to the frame
-		frame_fft = abs(fft(frame)) #calculate frame fft values in db
-		upper_mean = sum(frame_fft[fck:] ** 2)
-		lower_mean = sum(frame_fft[:fck-1] ** 2)
-		if upper_mean/lower_mean < 1e-5:
-			correct_frames += 1
-				
-	return np.round(correct_frames/all_frames, decimals=2) , tfX_plot
-
-	#confidence  by ratio of energies
-	#audio = estd.Windowing(size=len(audio), type="hann")(audio)
-	#N = int(2**(np.ceil(np.log2(len(audio)))))
-	#audio = np.append(audio,np.zeros(N-len(audio)))
-	#audio = esarr(audio)
-	#tfX = abs(estd.FFT()(audio))
-	#f = np.arange(int(len(audio)/2) + 1) * SR / len(audio)
-	#fck = int(2 * len(tfX) * fc / SR)
-
-	#tfX_plot = 20*np.log10(tfX)
-	#tfX_plot[ tfX_plot < (max(tfX_plot) + floor_db)] = max(tfX_plot) + floor_db
-	#tfX_plot = normalise(tfX_plot, log=True)
+def modify_floor(sig:list, floor_db:float, log=False):
 	
-	#return 1-sum(tfX[fck:] ** 2)/sum(tfX ** 2), tfX_plot
+	if log:
+		sig[sig < (max(sig) + floor_db)] = max(sig) + floor_db
+		return sig
+	else:
+		floor = 10 ** (floor_db/20)
+		sig[sig < (max(sig) * floor)] = max(sig) * floor
+		return sig
+
+def compute_histogram(idx_arr:list, f:list):
+	
+	hist = np.zeros(len(f))
+	for idx in idx_arr:
+		hist[idx] += 1
+	return hist
 
 def detectBW(fpath:str, frame_size:float, hop_size:float, floor_db:float, th:float, oversample_f:int):
 
@@ -187,15 +162,14 @@ def detectBW(fpath:str, frame_size:float, hop_size:float, floor_db:float, th:flo
 
 	#audio loader returns x, sample_rate, number_channels, md5, bit_rate, codec, of which only the first 3 are needed
 	audio, SR = estd.AudioLoader(filename = fpath)()[:2]
-	#print(x.shape,SR) 
 
 	if audio.shape[1] != 1: audio = (audio[:,0] + audio[:,1]) / 2 #if stereo: downmix to mono
 	
-	frame_size *= oversample_f #if an oversample factor is desired, 
-	f = np.arange(int(frame_size/2)+1)/frame_size * SR #initialize frequency vector or xticks
-
+	frame_size *= oversample_f #if an oversample factor is desired, apply it
+	f = np.arange(int(frame_size / 2) + 1)/frame_size * SR #initialize frequency vector or xticks
+	
 	fc_index_arr = []
-	interpolated_signals = [] #initialize interpolated_signals array
+	interpolated_spectrum = np.zeros(int(frame_size / 2) + 1) #initialize interpolated_spectrum array
 	fft = estd.FFT(size = frame_size) #declare FFT function
 	window = estd.Windowing(size=frame_size, type="hann") #declare windowing function
 
@@ -203,43 +177,26 @@ def detectBW(fpath:str, frame_size:float, hop_size:float, floor_db:float, th:flo
 		
 		frame = window(frame) #apply window to the frame
 		frame_fft_db = 20 * np.log10(abs(fft(frame) + eps)) #calculate frame fft values in db
-		#each value less than the threshold is set to 30 dB lower than the threshold
-		#print(max(frame_fft_db)-120)
 		
 		interp_frame = compute_spectral_envelope(frame_fft_db, f, "linear") #compute the linear interpolation between the values of the maxima of the spectrum
-		interp_frame[ interp_frame < (max(interp_frame) + floor_db)] = max(interp_frame) + floor_db
+		interp_frame = modify_floor(interp_frame, floor_db, log=True)
 
-		d = np.diff(interp_frame)[:-2]
-		d = np.append(d,np.zeros(3))
-		d[d>0] = 0
-		d[d!=min(d)]=0
-		
-		fc_index = get_last_true_index(d!=0)
+		fc_index = compute_fc(interp_frame)
 		fc_index_arr.append(fc_index)
-		interpolated_signals.append(interp_frame) #append the values to window
-		
-	mean_arr = np.mean((interpolated_signals), axis = 0)
-	fcy = np.zeros(len(f))
-	for idx in fc_index_arr:
-		fcy[idx] += 1
-	
-	selected_bins = np.array([i for i,b in enumerate(fcy > (0.05 * sum(fcy))) if b])
-	print(selected_bins)
-	if len(selected_bins) != 0:
-		most_likely_bin = int(np.mean(selected_bins))
-		mean_fc = f[most_likely_bin]
-		conf = 1-sum(abs(selected_bins-most_likely_bin))/len(f)
-	else:
-		conf = 0
-		mean_fc = SR/2
 
-	print("mean_fc: ",mean_fc,"conf: ",conf)
+		interpolated_spectrum += interp_frame #append the values to window
+	
+	interpolated_spectrum /= i + 1
+	hist = compute_histogram(fc_index_arr, f)
+	fc, conf, binary = compute_mean_fc(hist, f, SR)
+
+	print("mean_fc: ", fc ," conf: ", conf ," binary_result: ", binary)
 
 	fig, ax = plt.subplots(3,1,figsize=(15,9))
 	ax[0].plot(fc_index_arr,"x")
-	ax[1].stem(f,fcy)
-	ax[2].plot(f, mean_arr)
-	ax[2].axvline(x=mean_fc,color="r")
+	ax[1].stem(f,hist)
+	ax[2].plot(f, interpolated_spectrum)
+	ax[2].axvline(x=fc,color="r")
 	plt.show()
 
 if __name__ == "__main__":
