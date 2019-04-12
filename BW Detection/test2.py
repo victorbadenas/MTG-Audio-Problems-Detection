@@ -76,23 +76,24 @@ def compute_fc(interp_frame:list):
 	
 	d = np.diff(interp_frame)[:-2]
 	d = np.append(d,np.zeros(3))
-	d[d>0] = 0
-	d[d!=min(d)]=0
+	#d[d>0] = 0
+	#d[d!=min(d)]=0
+
+	#plt.plot(d)
+	#plt.show()
 	
-	return get_last_true_index(d!=0)
+	return get_last_true_index(d==min(d))
 
 def compute_mean_fc(hist:list, f:list, SR:float):
-	selected_bins = np.array([i for i,b in enumerate(hist > (0.05 * sum(hist))) if b])
-	if len(selected_bins) != 0:
-		most_likely_bin = int(np.mean(selected_bins))
-		mean_fc = f[most_likely_bin]
-		conf = 1-sum(abs(selected_bins-most_likely_bin))/len(hist)
-	else:
-		most_likely_bin = len(hist)
-		mean_fc = SR/2
-		conf = 0
-	
-	if conf > 0.5:
+	most_likely_bin = np.argmax(hist)
+	mean_fc = f[most_likely_bin]
+	conf = hist * abs(np.arange(len(hist)) - most_likely_bin) / ( max(abs(np.arange(len(hist)) - most_likely_bin)) * sum(hist))
+	conf = 1 - sum(conf)
+	#plt.stem(conf)
+	#plt.show()
+	#assert False
+
+	if conf > 0.8:
 		if mean_fc < (0.9 * SR/2):
 			binary_result = True
 	else:
@@ -148,14 +149,23 @@ def modify_floor(sig:list, floor_db:float, log=False):
 		sig[sig < (max(sig) * floor)] = max(sig) * floor
 		return sig
 
-def compute_histogram(idx_arr:list, f:list):
-	
-	hist = np.zeros(len(f))
-	for idx in idx_arr:
-		hist[idx] += 1
-	return hist
+def compute_histogram(idx_arr:list, f:list, mask = []):
+	if len(mask) == 0:
+		hist = np.zeros(len(f))
+		for idx in idx_arr:
+			hist[idx] += 1
+		return hist
+	else:
+		hist = np.zeros(len(f))
+		for idx, boolean in zip(idx_arr, mask):
+			if boolean:
+				hist[idx] += 1
+		return hist
 
-def detectBW(fpath:str, frame_size:float, hop_size:float, floor_db:float, th:float, oversample_f:int):
+def compute_energy(sig:list, frame_size:int, hop_size:int):
+	return 0
+
+def detectBW(fpath:str, frame_size:float, hop_size:float, floor_db:float, oversample_f:int):
 
 	if os.path.splitext(fpath)[1] != ".wav": raise ValueError("file must be wav") #check if the file has a wav extension, else: raise error
 	if not is_power2(oversample_f): raise ValueError("oversample factor can only be 1, 2 or 4") #check if the oversample factor is a power of two
@@ -168,16 +178,21 @@ def detectBW(fpath:str, frame_size:float, hop_size:float, floor_db:float, th:flo
 	frame_size *= oversample_f #if an oversample factor is desired, apply it
 	f = np.arange(int(frame_size / 2) + 1)/frame_size * SR #initialize frequency vector or xticks
 	
+	energy_arr = []
 	fc_index_arr = []
 	interpolated_spectrum = np.zeros(int(frame_size / 2) + 1) #initialize interpolated_spectrum array
 	fft = estd.FFT(size = frame_size) #declare FFT function
 	window = estd.Windowing(size=frame_size, type="hann") #declare windowing function
+	flatness = estd.FlatnessDB()
+	energy = estd.Energy()
+	#energy_arr = compute_energy(audio, frame_size, hop_size)
 
 	for i,frame in enumerate(estd.FrameGenerator(audio, frameSize=frame_size, hopSize=hop_size, startFromZero=True)):
 		
 		frame = window(frame) #apply window to the frame
-		frame_fft_db = 20 * np.log10(abs(fft(frame) + eps)) #calculate frame fft values in db
-		
+		frame_fft = abs(fft(frame))
+		frame_fft_db = 20 * np.log10(frame_fft + eps) #calculate frame fft values in db
+		energy_arr.append(energy(frame_fft))
 		interp_frame = compute_spectral_envelope(frame_fft_db, f, "linear") #compute the linear interpolation between the values of the maxima of the spectrum
 		interp_frame = modify_floor(interp_frame, floor_db, log=True)
 
@@ -187,16 +202,23 @@ def detectBW(fpath:str, frame_size:float, hop_size:float, floor_db:float, th:flo
 		interpolated_spectrum += interp_frame #append the values to window
 	
 	interpolated_spectrum /= i + 1
-	hist = compute_histogram(fc_index_arr, f)
+
+	energy_arr = normalise(energy_arr)
+	energy_mask = energy_arr>0.05
+
+	hist = compute_histogram(fc_index_arr, f, mask = energy_mask)
 	fc, conf, binary = compute_mean_fc(hist, f, SR)
 
 	print("mean_fc: ", fc ," conf: ", conf ," binary_result: ", binary)
 
-	fig, ax = plt.subplots(3,1,figsize=(15,9))
+	fig, ax = plt.subplots(4,1,figsize=(15,9))
 	ax[0].plot(fc_index_arr,"x")
 	ax[1].stem(f,hist)
-	ax[2].plot(f, interpolated_spectrum)
-	ax[2].axvline(x=fc,color="r")
+	
+	
+	ax[2].plot(energy_arr,'b')
+	ax[3].plot(f, interpolated_spectrum)
+	ax[3].axvline(x=fc,color="r")
 	plt.show()
 
 if __name__ == "__main__":
@@ -205,11 +227,9 @@ if __name__ == "__main__":
 	parser.add_argument("--frame_size", help="frame_size for the analysis fft (default=256)",default=256,required=False)
 	parser.add_argument("--hop_size", help="hop_size for the analysis fft (default=128)",default=128,required=False)
 	parser.add_argument("--floor_db", help="db value that will be considered as -inf",default=-90,required=False)
-	parser.add_argument("--th", help="threshold for the standard deviation to be considered in the detection process linear [0,1]",default=0.4, required=False) #default = 0.24 is ok
-	parser.add_argument("--oversample", help="(int) factor for the oversampling in frequency domain. Must be a powerr of 2",default=4,required=False)
+	parser.add_argument("--oversample", help="(int) factor for the oversampling in frequency domain. Must be a power of 2",default=4,required=False)
 	args = parser.parse_args()
-	detectBW(args.fpath, args.frame_size, args.hop_size, args.floor_db, args.th, int(args.oversample))
+	detectBW(args.fpath, args.frame_size, args.hop_size, args.floor_db, int(args.oversample))
 
-#python3 test.py ../Dataset/BW\ detection/_m1_DistNT_65.wav
-#python3 test.py ../Dataset/BW\ detection/Door\ of\ flat\ close\ int\ block\ of\ flats.wav
-#python3 test.py ../Dataset/BW\ detection/Door\ open\ close\ int\ flat\ soft\ 2.wav
+#python3 test2.py ../Dataset/Error_control_env/11k_in_44.1k.wav 
+#python3 test2.py ../Dataset/Error_control_env/8KHz_in_44.1kHz.wav 
