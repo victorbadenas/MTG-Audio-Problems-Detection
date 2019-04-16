@@ -52,57 +52,64 @@ def Bit_Detection(fpath:str):
 
 	b = int(br / SR / channels) #number of bits used to code the fpath signal
 	possible_values = np.arange(2 ** b)
-	_, ax = plt.subplots(3, channels, figsize=(15, 9))
+	#_, ax = plt.subplots(3, channels, figsize=(15, 9))
+	print("array created")
 
-	bits_result = -1
-	conf_result = 1
+	#bits_result = -1
+	#conf_result = 1
+	audio_int_channel = (2**b) * ((0.5*audio[:, 0])+0.5)
+	audio_int_channel = audio_int_channel[:10000]
+	hist = compute_histogram(audio_int_channel, possible_values)
+	plt.plot(hist, 'x')
+	plt.show()
+	assert False
 
 	for channel in range(channels):
 		audio_int_channel = (2**b) * ((0.5*audio[:, channel])+0.5)
 		
 		hist = compute_histogram(audio_int_channel, possible_values)
 
-		hist_peaks = hist/sum(hist)
-		hist_peaks[hist_peaks <= 0.0001] = 0
-		x_peaks, y_peaks = get_peaks(hist_peaks, possible_values)
-		y_peaks = np.array(y_peaks) * sum(hist)
+		#hist_peaks = hist/sum(hist)
+		#hist_peaks[hist_peaks <= 0.0001] = 0
+		#x_peaks, y_peaks = get_peaks(hist_peaks, possible_values)
+		#y_peaks = np.array(y_peaks) * sum(hist)
 
-		tol = b/2
-		resolution = 2
-		center_x = []
-		center_y = []
+		#tol = b/2
+		#resolution = 2
+		#center_x = []
+		#center_y = []
 
-		first_idx = np.argmax(y_peaks) - resolution
-		for i in range(first_idx, first_idx + (3 * resolution + 1)):
-			center_x.append(x_peaks[i])
-			center_y.append(y_peaks[i])
+		#first_idx = np.argmax(y_peaks) - resolution
+		#for i in range(first_idx, first_idx + (3 * resolution + 1)):
+		#	center_x.append(x_peaks[i])
+		#	center_y.append(y_peaks[i])
 		
-		b_pred = np.round(np.log2(np.mean(np.diff(center_x))))
-		b_pred = max(8,b_pred)
-		hop = 2 ** b_pred
-		print(hop)
+		#b_pred = np.round(np.log2(np.mean(np.diff(center_x))))
+		#b_pred = max(8,b_pred)
+		#hop = 2 ** b_pred
+		#print(hop)
 
-		zero_idx = 2 ** (b - 1)
-		idx_arr = []
-		idx = zero_idx - int(zero_idx/hop)*hop
-		while idx <= 2**b:
-			idx_arr.append(idx)
-			idx += hop
+		#zero_idx = 2 ** (b - 1)
+		#idx_arr = []
+		#idx = zero_idx - int(zero_idx/hop)*hop
+		#while idx <= 2**b:
+		#	idx_arr.append(idx)
+		#	idx += hop
 
-		conf_hist = hist.copy()
-		for x_search in idx_arr:
-			if (x_search - tol)<0:
-				conf_hist[:int(x_search + tol)] = 0
-			elif (x_search + tol)>len(conf_hist):
-				conf_hist[int(x_search - tol):] = 0
-			else:
-				conf_hist[int(x_search - tol):int(x_search + tol)] = 0
+		#conf_hist = hist.copy()
+		#for x_search in idx_arr:
+		#	if (x_search - tol)<0:
+		#		conf_hist[:int(x_search + tol)] = 0
+		#	elif (x_search + tol)>len(conf_hist):
+		#		conf_hist[int(x_search - tol):] = 0
+		#	else:
+		#		conf_hist[int(x_search - tol):int(x_search + tol)] = 0
 
-		print("b_pred: ", b_pred, "conf: ", 1-sum(conf_hist)/sum(hist))
+		#print("b_pred: ", b_pred, "conf: ", 1-sum(conf_hist)/sum(hist))
 
-		bits_result = max(bits_result, b_pred)
-		conf_result *= 1-sum(conf_hist)/sum(hist)
-
+		#bits_result = max(bits_result, b_pred)
+		#conf_result *= 1-sum(conf_hist)/sum(hist)
+		"""
 		if channels == 1:
 			ax[0].plot(audio_int_channel)
 			ax[1].plot(possible_values, hist, 'x')
@@ -114,7 +121,9 @@ def Bit_Detection(fpath:str):
 			ax[1][channel].plot(x_peaks, y_peaks, 'xr')
 			ax[1][channel].plot(x_peaks[np.argmax(y_peaks)], max(y_peaks), 'x')
 			ax[2][channel].plot(possible_values, conf_hist, 'x')
-	print("bits_result: ", bits_result, "conf_result: ", conf_result)
+		"""
+	#print("bits_result: ", bits_result, "conf_result: ", conf_result)
+	plt.plot(hist, 'x')
 	plt.show()
 
 if __name__ == "__main__":
