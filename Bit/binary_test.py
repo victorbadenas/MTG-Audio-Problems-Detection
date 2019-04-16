@@ -17,14 +17,14 @@ def Bit_Detection_Binary(fpath:str):
         raise ValueError("file must be wav")
     
     if not os.path.exists(fpath): 
-        raise ValueError("file does not exist")
+        raise ValueError("file {} does not exist".format(fpath))
 
     audio, SR, channels, _, br, _ = estd.AudioLoader(filename=fpath)()
 
     b = int(br / SR / channels) #number of bits used to code the fpath signal
-
-    if b > 32: 
-        raise ValueError("Maximum bit depth allowed is 32bit")
+    
+    if b not in [8,16,24,32]:
+        raise ValueError("Only bit depths accepted are 8, 16, 24, 32")
 
     if channels >= 1: audio = audio[:,0] #if audio is stereo, only get the left channeñ
     
@@ -36,6 +36,7 @@ def Bit_Detection_Binary(fpath:str):
     elif b == 24: audio = audio.astype('int32')
     elif b == 32: audio = audio.astype('int32')
     else: audio = audio.astype('int64')
+    
     #get 100 random splices of data of 100 samples each one
     chunk_len = 100
     number_of_chunks = 100
@@ -48,9 +49,13 @@ def Bit_Detection_Binary(fpath:str):
     result = [0]*b
     for sample in audio_to_analyse:
         bin_arr = convert_to_bin_array(sample,b)
-        result = [ a+b for a,b in zip(result,bin_arr)]
-    print(result)
-    print(sum([1 for el in result if el != 0]))
+        result = [ a or b for a,b in zip(result,bin_arr)]
+    #print(result)
+    for i,el in enumerate(reversed(result)):
+        if el != 0:
+            bits_predicted = len(result)-i
+            break
+    print(bits_predicted)
     
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="calculate correlation for all the sounds in s folder")
