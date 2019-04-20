@@ -20,6 +20,8 @@ def ess_hum_detector(x: list, Q0=.1, Q1=.55, frame_size=1024, hop_size=512, dete
     for s,e in zip(starts,ends):
         dur.append(e-s)
     
+    #len_x = len(x)
+    #del starts; del ends; del _; del x
     return round(100*sum(dur)/len(x),2)
 
 def ess_noiseburst_detector(x:list, frame_size=1024, hop_size=512, detection_th = 0.005):
@@ -46,5 +48,6 @@ def ess_noiseburst_detector(x:list, frame_size=1024, hop_size=512, detection_th 
             count += 1
             for s in corrupt_samples:
                 idxs.append(s)
-
+    
+    #del noiseBurstDetector_algo; del frame; del corrupt_samples; del x;
     return idxs, round(100*count/(i+1),2)

@@ -33,5 +33,6 @@ def ess_click_detector(x, frame_size=1024, hop_size=512, **kwargs):
         
         if len(frame_starts) + len(frame_ends) != 0: count += 1
     
-    print("Number of frames:", i+1)
+    #print("Number of frames:", i+1)
+    #del x; del frame; del frame_ends; del frame_starts;
     return starts, ends, round(100*count/(i+1),2)

@@ -21,6 +21,7 @@ def Bit_Detection_Binary(audio:list, b:int, chunk_len = 100, number_of_chunks = 
     #and change type to int32 (32 bit is the highest coding depth allowed)
     audio = (2**(b-1)) * audio.astype('float64')
     audio = np.clip(audio,-2**(b-1),2**(b-1)-1)
+    
     if b == 8: 
         audio = audio.astype('int8')
     elif b == 16: 
@@ -68,14 +69,14 @@ def Bit_Detection_multifile(folder:str):
         b = int(br / SR / channels) #number of bits used to code the fpath signal
 
         extracted_b = Bit_Detection_Binary(audio, b)
-        correct_b = min(b,int(file.split('b')[0]))
+        #correct_b = min(b,int(file.split('b')[0]))
         df_temp = pd.DataFrame({
             "Filename" : [file],
             "Container" : [b],
-            "Correct" : [correct_b],
+            #"Correct" : [correct_b],
             "Extracted" : [extracted_b],
             "Problem in file" : [extracted_b<b],
-            "Extracted_correctly" : [correct_b==extracted_b]
+            #"Extracted_correctly" : [correct_b==extracted_b]
         })
         df = df.append(df_temp)
         #print("{}:\tcontainer_bits:{}\tcorrect_bits:{}\textracted_bits:{}\tcorrect:{}".format(file, b, correct_b, extracted_b, correct_b==extracted_b))

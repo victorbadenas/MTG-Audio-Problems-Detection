@@ -20,4 +20,6 @@ def ess_startstop_detector(x, frame_size=1024, hop_size=512, **kwargs):
 
     startCut, stopCut = startStopCut(esarr(x))
 
+    #len_x = len(x)
+    #del x; del startStopCut;
     return round(100*(startCut + stopCut)/len(x), 2)

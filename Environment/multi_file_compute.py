@@ -4,6 +4,7 @@ import shutil
 import pandas as pd
 from pydub import AudioSegment
 from single_file_json_compute import *
+import gc
 
 
 def multi_file_compute(audiofolder, jsonfolder):
@@ -30,22 +31,22 @@ def multi_file_compute(audiofolder, jsonfolder):
 
         if extension == ".wav":
             audiopath = os.path.join(audiofolder,file)
-            single_json_compute(audiopath, jsonfolder, print_flag = False)
+            json_dict = single_json_compute(audiopath, jsonfolder, print_flag = False)
 
-            jsonpath = os.path.join(jsonfolder,filename + ".json")
-            with open(jsonpath,'r') as jsonfile:
-                json_dict = json.load(jsonfile)
+            #with open(jsonfolder+"all_files.tsv",'a') as tsvfile:
+            #    tsvfile.write(filename + "\t")
+            #    for problem in json_dict:
+            #        for feature in json_dict[problem]:
+            #             tsvfile.write(str(json_dict[problem][feature]) + "\t")
             
             df_dict = { "Name" : filename }
             for problem in json_dict:
                 for feature in json_dict[problem]:
                     name = problem + ':' + feature
                     df_dict[name] = [json_dict[problem][feature]]
+            gc.collect()
+            df = df.append(pd.DataFrame(df_dict))
 
-            df_file = pd.DataFrame(df_dict)
-
-            df = df.append(df_file)
-            
     df = df.set_index("Name")
 
     with open(jsonfolder+"all_files.tsv",'w') as tsvfile:

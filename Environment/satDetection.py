@@ -30,4 +30,6 @@ def ess_saturation_detector(x:list, frame_size=1024, hop_size=512, **kwargs):
             ends.append(e)
         if len(frame_starts) + len(frame_ends) != 0: count += 1
 
+    #del frame; del frame_starts; del frame_ends; del x
+    #x = None; frame = None; frame_starts = None; frame_ends= None
     return starts, ends, round(100*count/(i+1),2)
