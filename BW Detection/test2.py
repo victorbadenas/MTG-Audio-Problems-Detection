@@ -89,16 +89,28 @@ def compute_fc(interp_frame:list):
 def compute_mean_fc(hist:list, fc_index_arr:list, f:list, SR:float):
 	most_likely_bin = np.argmax(hist)
 	mean_fc = f[most_likely_bin]
-	print(np.std(fc_index_arr))
-	conf = hist * abs(np.arange(len(hist)) - most_likely_bin) / ( max(abs(np.arange(len(hist)) - most_likely_bin)) * sum(hist))
-	conf = 1 - sum(conf)
+	#print("len(f):",len(f))
+	#print("most_likely_bin:",most_likely_bin)
+	std_bin = int( min(np.std(fc_index_arr), len(f)/12) )
+	#std = std_bin/len(f)*(SR/2)
+	#print("std_bin:",std_bin)
+	#conf = hist * abs(np.arange(len(hist)) - most_likely_bin) / ( max(abs(np.arange(len(hist)) - most_likely_bin)) * sum(hist))
+	hist = hist/sum(hist)
+	if most_likely_bin-int(std_bin/2) < 0:
+		conf = sum( hist[:most_likely_bin+int(std_bin/2)] )
+	elif most_likely_bin+int(std_bin/2) > len(hist):
+		conf = sum( hist[:most_likely_bin-int(std_bin/2)] )
+	else:
+		conf = sum( hist[:most_likely_bin-int(std_bin/2)] ) + sum( hist[most_likely_bin+int(std_bin/2):] )
+	conf = 1 - conf
 	#plt.stem(conf)
 	#plt.show()
-	#assert False
 
-	if conf > 0.8:
+	if conf > 0.6:
 		if mean_fc < (0.9 * SR/2):
 			binary_result = True
+		else:
+			binary_result = False
 	else:
 		binary_result = False
 
@@ -214,15 +226,15 @@ def detectBW(fpath:str, frame_size:float, hop_size:float, floor_db:float, oversa
 	hist = compute_histogram(fc_index_arr, f)
 	fc, conf, binary = compute_mean_fc(hist, fc_index_arr, f, SR)
 
-	print("mean_fc: ", fc ," conf: ", conf ," binary_result: ", binary)
+	print("filename: ", fpath ,"mean_fc: ", fc ," conf: ", conf ," binary_result: ", binary)
 
-	fig, ax = plt.subplots(4,1,figsize=(15,9))
-	ax[0].plot(fc_index_arr,"x")
-	ax[1].stem(f,hist)
-	ax[2].plot(energy_arr,'b')
-	ax[3].plot(f, interpolated_spectrum)
-	ax[3].axvline(x=fc,color="r")
-	plt.show()
+	#fig, ax = plt.subplots(4,1,figsize=(15,9))
+	#ax[0].plot(fc_index_arr,"x")
+	#ax[1].stem(f,hist)
+	#ax[2].plot(energy_arr,'b')
+	#ax[3].plot(f, interpolated_spectrum)
+	#ax[3].axvline(x=fc,color="r")
+	#plt.show()
 
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser(description="Calculates the effective BW of a file")
