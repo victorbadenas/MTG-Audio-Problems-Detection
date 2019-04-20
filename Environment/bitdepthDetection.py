@@ -37,7 +37,7 @@ def bit_depth_detector(audio:list, b:int, chunk_len = 100, number_of_chunks = 10
     elif b == 32: 
         audio = audio.astype('int32')
     else: 
-        audio = audio.astype('int64')
+        raise ValueError("Only bit depths accepted are 8, 16, 24, 32")
     
     #clip the values to the maximum values represented by the datatype selected
     audio = np.clip(audio,-2**(b-1),2**(b-1)-1)

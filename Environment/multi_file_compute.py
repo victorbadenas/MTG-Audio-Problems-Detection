@@ -15,14 +15,17 @@ def multi_file_compute(audiofolder, jsonfolder):
         jsonfolder: string containing the relative path for the folder containing the json files
 
     """
-    df = pd.DataFrame()
-
+    first = True #boolean to create the headers of the problems
+    tsvpath = os.path.join(jsonfolder,"all_files.tsv")
+    if os.path.exists(tsvpath): os.remove(tsvpath)
+    
     for file in os.listdir(audiofolder):
 
         filename, extension = os.path.splitext(file)
 
+        #if the file is mp3 of aiff will be converted to wav and the mp3 or aiff file will be removed
         if extension in (".mp3",".aiff"):
-            print("mp3 or aiff")
+            print("{} is {} and will be converted to wav".format(file,extension))
             audiopath_src = os.path.join(audiofolder, file)
             audiopath_dest = os.path.join(audiofolder, filename + ".wav")
             AudioSegment.from_file(audiopath_src).export(audiopath_dest, "wav")
@@ -32,25 +35,21 @@ def multi_file_compute(audiofolder, jsonfolder):
         if extension == ".wav":
             audiopath = os.path.join(audiofolder,file)
             json_dict = single_json_compute(audiopath, jsonfolder, print_flag = False)
-
-            #with open(jsonfolder+"all_files.tsv",'a') as tsvfile:
-            #    tsvfile.write(filename + "\t")
-            #    for problem in json_dict:
-            #        for feature in json_dict[problem]:
-            #             tsvfile.write(str(json_dict[problem][feature]) + "\t")
-            
-            df_dict = { "Name" : filename }
-            for problem in json_dict:
-                for feature in json_dict[problem]:
-                    name = problem + ':' + feature
-                    df_dict[name] = [json_dict[problem][feature]]
-            gc.collect()
-            df = df.append(pd.DataFrame(df_dict))
-
-    df = df.set_index("Name")
-
-    with open(jsonfolder+"all_files.tsv",'w') as tsvfile:
-        df.to_csv(tsvfile, sep="\t")
+    
+            with open(tsvpath, 'a') as tsvfile:
+                if first: #this will write the headers when the loop is in the first audio file
+                    tsvfile.write("Filename")
+                    for problem in json_dict:
+                        for feature in json_dict[problem]:
+                            tsvfile.write("\t" + problem + ":" + feature)
+                    tsvfile.write("\n")
+                    first = False
+                
+                tsvfile.write(filename)
+                for problem in json_dict:
+                    for feature in json_dict[problem]:
+                         tsvfile.write("\t" + str(json_dict[problem][feature]))
+                tsvfile.write("\n")
 
 
 if __name__ == "__main__": 
@@ -60,7 +59,10 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if args.jsonfolder == "":
-        print("json folder is:", args.audiofolder)
-        multi_file_compute(args.audiofolder,args.audiofolder)
+        jsonfolder = os.path.join(args.audiofolder, "json")
+        if not os.path.exists(jsonfolder):
+            os.mkdir(jsonfolder)
+        print("json folder is:", jsonfolder)
+        multi_file_compute(args.audiofolder,jsonfolder)
     else:
         multi_file_compute(args.audiofolder,args.jsonfolder)
