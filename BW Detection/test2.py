@@ -69,6 +69,8 @@ def get_last_true_index(bool_list:list):
 	Returns:
 		(int) index position of the last True value in the array
 	"""
+	if not any(bool_list): return len(bool_list)-1
+	
 	for i,item in enumerate(reversed(bool_list)):
 		if item: return len(bool_list)-1-i
 
@@ -82,11 +84,12 @@ def compute_fc(interp_frame:list):
 	#plt.plot(d)
 	#plt.show()
 	
-	return get_last_true_index(d==min(d))
+	return get_last_true_index( d <= (min(d) + 2) )
 
-def compute_mean_fc(hist:list, f:list, SR:float):
+def compute_mean_fc(hist:list, fc_index_arr:list, f:list, SR:float):
 	most_likely_bin = np.argmax(hist)
 	mean_fc = f[most_likely_bin]
+	print(np.std(fc_index_arr))
 	conf = hist * abs(np.arange(len(hist)) - most_likely_bin) / ( max(abs(np.arange(len(hist)) - most_likely_bin)) * sum(hist))
 	conf = 1 - sum(conf)
 	#plt.stem(conf)
@@ -162,8 +165,8 @@ def compute_histogram(idx_arr:list, f:list, mask = []):
 				hist[idx] += 1
 		return hist
 
-def compute_energy(sig:list, frame_size:int, hop_size:int):
-	return 0
+def energy_verification(frame_fft:list, fc_index:int):
+    return sum(frame_fft[:fc_index]**2)/sum(frame_fft**2) > 0.7
 
 def detectBW(fpath:str, frame_size:float, hop_size:float, floor_db:float, oversample_f:int):
 
@@ -183,39 +186,39 @@ def detectBW(fpath:str, frame_size:float, hop_size:float, floor_db:float, oversa
 	interpolated_spectrum = np.zeros(int(frame_size / 2) + 1) #initialize interpolated_spectrum array
 	fft = estd.FFT(size = frame_size) #declare FFT function
 	window = estd.Windowing(size=frame_size, type="hann") #declare windowing function
-	flatness = estd.FlatnessDB()
-	energy = estd.Energy()
-	#energy_arr = compute_energy(audio, frame_size, hop_size)
 
 	for i,frame in enumerate(estd.FrameGenerator(audio, frameSize=frame_size, hopSize=hop_size, startFromZero=True)):
 		
 		frame = window(frame) #apply window to the frame
 		frame_fft = abs(fft(frame))
 		frame_fft_db = 20 * np.log10(frame_fft + eps) #calculate frame fft values in db
-		energy_arr.append(energy(frame_fft))
+		#energy_arr.append(energy(frame_fft))
 		interp_frame = compute_spectral_envelope(frame_fft_db, f, "linear") #compute the linear interpolation between the values of the maxima of the spectrum
 		interp_frame = modify_floor(interp_frame, floor_db, log=True)
 
 		fc_index = compute_fc(interp_frame)
 		fc_index_arr.append(fc_index)
 
+		if energy_verification(frame_fft, fc_index):
+			fc_index_arr.append(fc_index)
+		else:
+			fc_index_arr.append(len(f)-1)
+
 		interpolated_spectrum += interp_frame #append the values to window
 	
 	interpolated_spectrum /= i + 1
 
-	energy_arr = normalise(energy_arr)
-	energy_mask = energy_arr>0.05
+	#energy_arr = normalise(energy_arr)
+	#energy_mask = energy_arr>0.05
 
-	hist = compute_histogram(fc_index_arr, f, mask = energy_mask)
-	fc, conf, binary = compute_mean_fc(hist, f, SR)
+	hist = compute_histogram(fc_index_arr, f)
+	fc, conf, binary = compute_mean_fc(hist, fc_index_arr, f, SR)
 
 	print("mean_fc: ", fc ," conf: ", conf ," binary_result: ", binary)
 
 	fig, ax = plt.subplots(4,1,figsize=(15,9))
 	ax[0].plot(fc_index_arr,"x")
 	ax[1].stem(f,hist)
-	
-	
 	ax[2].plot(energy_arr,'b')
 	ax[3].plot(f, interpolated_spectrum)
 	ax[3].axvline(x=fc,color="r")
@@ -227,7 +230,7 @@ if __name__ == "__main__":
 	parser.add_argument("--frame_size", help="frame_size for the analysis fft (default=256)",default=256,required=False)
 	parser.add_argument("--hop_size", help="hop_size for the analysis fft (default=128)",default=128,required=False)
 	parser.add_argument("--floor_db", help="db value that will be considered as -inf",default=-90,required=False)
-	parser.add_argument("--oversample", help="(int) factor for the oversampling in frequency domain. Must be a power of 2",default=4,required=False)
+	parser.add_argument("--oversample", help="(int) factor for the oversampling in frequency domain. Must be a power of 2",default=1,required=False)
 	args = parser.parse_args()
 	detectBW(args.fpath, args.frame_size, args.hop_size, args.floor_db, int(args.oversample))
 
