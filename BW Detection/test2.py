@@ -95,26 +95,39 @@ def compute_mean_fc(hist:list, fc_index_arr:list, f:list, SR:float):
 	#std = std_bin/len(f)*(SR/2)
 	#print("std_bin:",std_bin)
 	#conf = hist * abs(np.arange(len(hist)) - most_likely_bin) / ( max(abs(np.arange(len(hist)) - most_likely_bin)) * sum(hist))
-	hist = hist/sum(hist)
-	if most_likely_bin-int(std_bin/2) < 0:
-		conf = sum( hist[:most_likely_bin+int(std_bin/2)] )
-	elif most_likely_bin+int(std_bin/2) > len(hist):
-		conf = sum( hist[:most_likely_bin-int(std_bin/2)] )
+
+	
+	if mean_fc < .9 * SR / 2:
+		conf_scale = most_likely_bin - abs(most_likely_bin - np.arange(len(hist))) #greater around the peak
+		conf_scale = conf_scale / max(conf_scale)
+		conf = sum(hist * conf_scale) / sum(hist)
+		return mean_fc, conf, conf>0.6
 	else:
-		conf = sum( hist[:most_likely_bin-int(std_bin/2)] ) + sum( hist[most_likely_bin+int(std_bin/2):] )
-	conf = 1 - conf
+		if most_likely_bin+1 > len(hist)-1: conf = sum(hist[most_likely_bin-1:]**2)		
+		else: conf = sum(hist[most_likely_bin-1:most_likely_bin+1]**2)
+		conf /= sum(hist**2)
+		return mean_fc, conf, False
+	hist /= sum(hist)
+	#if most_likely_bin-int(std_bin/2) < 0:
+	#	conf = sum( hist[:most_likely_bin+int(std_bin/2)] )
+	#elif most_likely_bin+int(std_bin/2) > len(hist):
+	#	conf = sum( hist[:most_likely_bin-int(std_bin/2)] )
+	#else:
+	#	conf = sum( hist[:most_likely_bin-int(std_bin/2)] ) + sum( hist[most_likely_bin+int(std_bin/2):] )
+	#conf = 1 - conf
+
 	#plt.stem(conf)
 	#plt.show()
 
-	if conf > 0.6:
-		if mean_fc < (0.9 * SR/2):
-			binary_result = True
-		else:
-			binary_result = False
-	else:
-		binary_result = False
+	#if conf > 0.6:
+	#	if mean_fc < (0.9 * SR/2):
+	#		binary_result = True
+	#	else:
+	#		binary_result = False
+	#else:
+	#	binary_result = False
 
-	return mean_fc, conf, binary_result
+	#return mean_fc, conf, binary_result
 
 def compute_spectral_envelope(frame_fft:list, xticks:list, kind="linear"):
 	"""Compute the spectral envelope through a peak interpolation method
@@ -193,7 +206,6 @@ def detectBW(fpath:str, frame_size:float, hop_size:float, floor_db:float, oversa
 	frame_size *= oversample_f #if an oversample factor is desired, apply it
 	f = np.arange(int(frame_size / 2) + 1)/frame_size * SR #initialize frequency vector or xticks
 	
-	energy_arr = []
 	fc_index_arr = []
 	interpolated_spectrum = np.zeros(int(frame_size / 2) + 1) #initialize interpolated_spectrum array
 	fft = estd.FFT(size = frame_size) #declare FFT function
@@ -213,8 +225,8 @@ def detectBW(fpath:str, frame_size:float, hop_size:float, floor_db:float, oversa
 
 		if energy_verification(frame_fft, fc_index):
 			fc_index_arr.append(fc_index)
-		else:
-			fc_index_arr.append(len(f)-1)
+		#else:
+		#	fc_index_arr.append(len(f)-1)
 
 		interpolated_spectrum += interp_frame #append the values to window
 	
@@ -222,19 +234,19 @@ def detectBW(fpath:str, frame_size:float, hop_size:float, floor_db:float, oversa
 
 	#energy_arr = normalise(energy_arr)
 	#energy_mask = energy_arr>0.05
-
+	if len(fc_index_arr) == 0: fc_index_arr = [frame_size]
+	
 	hist = compute_histogram(fc_index_arr, f)
 	fc, conf, binary = compute_mean_fc(hist, fc_index_arr, f, SR)
 
 	print("filename: ", fpath ,"mean_fc: ", fc ," conf: ", conf ," binary_result: ", binary)
 
-	#fig, ax = plt.subplots(4,1,figsize=(15,9))
-	#ax[0].plot(fc_index_arr,"x")
-	#ax[1].stem(f,hist)
-	#ax[2].plot(energy_arr,'b')
-	#ax[3].plot(f, interpolated_spectrum)
-	#ax[3].axvline(x=fc,color="r")
-	#plt.show()
+	fig, ax = plt.subplots(3,1,figsize=(15,9))
+	ax[0].plot(fc_index_arr,"x")
+	ax[1].stem(f,hist)
+	ax[2].plot(f, interpolated_spectrum)
+	ax[2].axvline(x=fc,color="r")
+	plt.show()
 
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser(description="Calculates the effective BW of a file")
