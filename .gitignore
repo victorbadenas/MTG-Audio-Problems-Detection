@@ -104,7 +104,10 @@ venv.bak/
 .mypy_cache/
 
 # MAC OS
-.DS_Store
+\.DS_Store
 
 # Dataset
 Dataset/
+
+# Docker
+Dockerfile
