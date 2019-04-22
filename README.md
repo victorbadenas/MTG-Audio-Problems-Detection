@@ -10,5 +10,5 @@ main.py in Environment folder contains the necessary code to run the algorithms 
 All other folders are test scripts.
 
 to run main.py:
-	cd Environment
-	python3 main.py <path to the audio files> --jsonfolder <optional:path to store the json files>
+- cd Environment 
+- python3 main.py <path to the audio files> --jsonfolder <optional:path to store the json files>
