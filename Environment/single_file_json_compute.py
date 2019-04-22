@@ -3,6 +3,8 @@ import os
 import json
 import argparse
 import gc
+import numpy as np
+import essentia.standard as estd
 from algos.satDetection import *
 from algos.noiseDetection import *
 from algos.clickDetection import *
@@ -10,9 +12,6 @@ from algos.startstopDetection import ess_startstop_detector
 from algos.phaseDetection import falsestereo_detector, outofphase_detector
 from algos.bitdepthDetection import bit_depth_detector
 from algos.bwdetection import detectBW
-import numpy as np
-import essentia.standard as estd
-import matplotlib.pyplot as plt
 
 def single_json_compute(audiopath, jsonfolder, print_flag=False):
     """Calls the audio_problems_detection algorithms and stores the result in a json file
@@ -22,6 +21,8 @@ def single_json_compute(audiopath, jsonfolder, print_flag=False):
         jsonfolder: string containing the relative path for the json folder
         print_flag: (boolean) True if a preview of the josn file is desired, False otherwise (default = False)
 
+    Returns:
+        json_dict: (dict) dictionary with the audio's features
     """
 
     if not os.path.exists(audiopath): raise ValueError("Audio File does not exist")
@@ -53,7 +54,7 @@ def single_json_compute(audiopath, jsonfolder, print_flag=False):
     fs_bool, fs_perc               = falsestereo_detector(audio, frame_size=frame_size, hop_size=hop_size)
     oop_bool, oop_perc             = outofphase_detector(audio, frame_size=frame_size, hop_size=hop_size)
     extr_b, b_bool                 = bit_depth_detector(audio, bit_depth_container)
-    bw_fc, bw_conf, bw_bool      = detectBW(monoaudio, sr, frame_size=frame_size, hop_size=hop_size)
+    bw_fc, bw_conf, bw_bool        = detectBW(monoaudio, sr, frame_size=frame_size, hop_size=hop_size)
     
     audio = None; monoaudio = None
     gc.collect()

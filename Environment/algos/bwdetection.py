@@ -1,8 +1,6 @@
 import os
 import sys
 import numpy as np
-import matplotlib.pyplot as plt
-#import argparse
 import essentia.standard as estd
 import scipy.signal
 from scipy.interpolate import interp1d

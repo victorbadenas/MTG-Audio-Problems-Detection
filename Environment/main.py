@@ -1,11 +1,7 @@
 import os
-import json
-import shutil
-import pandas as pd
+import argparse
 from pydub import AudioSegment
-from single_file_json_compute import *
-import gc
-
+from single_file_json_compute import single_json_compute
 
 def multi_file_compute(audiofolder, jsonfolder):
     """Calls the audio_problems_detection algorithms and stores the result in a json file
