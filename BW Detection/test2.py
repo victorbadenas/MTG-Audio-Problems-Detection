@@ -154,19 +154,6 @@ def compute_spectral_envelope(frame_fft:list, xticks:list, kind="linear"):
 	hp = np.append(hp,frame_fft[-1]) ; hp = np.append(frame_fft[0],hp) #appending the first and last value of the function
 	return interp1d(xp,hp,kind=kind)(xticks) #interpolating and returning
 
-def compute_confidence(audio:list, frame_size:int, hop_size:int, fc:float, SR:int):
-	"""Computes the confidence of the result by calculation the spectral power in
-		the part of the spectrum from fc to fs/2 and comparing it to the whole spectral density
-
-	Args:
-		audio: (list) iterable with the mono information of the audio file
-		fc: (float) predicted cut frequency
-		SR: (int/float) sample rate
-
-	Returns:
-		(float) confidence value
-	"""
-
 def modify_floor(sig:list, floor_db:float, log=False):
 	
 	if log:
@@ -257,6 +244,3 @@ if __name__ == "__main__":
 	parser.add_argument("--oversample", help="(int) factor for the oversampling in frequency domain. Must be a power of 2",default=1,required=False)
 	args = parser.parse_args()
 	detectBW(args.fpath, args.frame_size, args.hop_size, args.floor_db, int(args.oversample))
-
-#python3 test2.py ../Dataset/Error_control_env/11k_in_44.1k.wav 
-#python3 test2.py ../Dataset/Error_control_env/8KHz_in_44.1kHz.wav 
