@@ -11,4 +11,4 @@ All other folders are test scripts.
 
 to run main.py:
 - cd Environment 
-- python3 main.py _path to the audio files_ --jsonfolder _optional:path to store the json files_
+- python3 main.py _path_to_the_audio_files_ --jsonfolder _optional:path_to_store_the_json_files_
