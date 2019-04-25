@@ -1,5 +1,7 @@
 import os
 import argparse
+import shutil
+import pandas as pd
 from pydub import AudioSegment
 from single_file_json_compute import single_json_compute
 
@@ -12,8 +14,8 @@ def multi_file_compute(audiofolder, jsonfolder):
 
     """
     first = True #boolean to create the headers of the problems
-    tsvpath = os.path.join(jsonfolder,"all_files.tsv")
-    if os.path.exists(tsvpath): os.remove(tsvpath)
+    tsvpath = os.path.join(jsonfolder,"all_files.tsv") #file where all the extracted features will be stored
+    if os.path.exists(tsvpath): os.remove(tsvpath) #cleaning from previous executions
     
     for file in os.listdir(audiofolder):
 
@@ -31,7 +33,7 @@ def multi_file_compute(audiofolder, jsonfolder):
         if extension == ".wav":
             audiopath = os.path.join(audiofolder,file)
             json_dict = single_json_compute(audiopath, jsonfolder, print_flag = False)
-    
+            
             with open(tsvpath, 'a') as tsvfile:
                 if first: #this will write the headers when the loop is in the first audio file
                     tsvfile.write("Filename")
@@ -44,9 +46,29 @@ def multi_file_compute(audiofolder, jsonfolder):
                 tsvfile.write(filename)
                 for problem in json_dict:
                     for feature in json_dict[problem]:
-                         tsvfile.write("\t" + str(json_dict[problem][feature]))
+                        tsvfile.write("\t" + str(json_dict[problem][feature]))
+                
+                #assert False        
                 tsvfile.write("\n")
+    create_files_arrays(tsvpath)
 
+def create_files_arrays(tsvpath):
+
+    df = pd.read_csv(tsvpath, sep='\t')
+    tsvpath = os.path.join( os.path.dirname(tsvpath), "name_files")
+    if not os.path.exists(tsvpath): os.mkdir(tsvpath)
+
+    for col in df.columns[1:]:
+        col_arr = col.split(":")
+        if len(col_arr)==2:
+            if col_arr[-1]=="Bool":
+                problem_tsv = os.path.join(tsvpath,"{}_files.tsv".format(col_arr[0]))
+                df_tmp = df.copy()
+                df_tmp = df_tmp.loc[df_tmp[col] == True]
+                files = df_tmp["Filename"].to_list()
+                with open(problem_tsv, 'a') as tsvfile:
+                    for file in files:
+                        tsvfile.write(str(file) + '\n')
 
 if __name__ == "__main__": 
     parser = argparse.ArgumentParser(description="Calls the audio_problems_detection algorithms and stores the result in a json file")

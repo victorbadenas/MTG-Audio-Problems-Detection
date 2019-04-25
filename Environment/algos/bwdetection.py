@@ -31,7 +31,7 @@ def detectBW(audio:list, SR:float, frame_size = 256, hop_size = 128, floor_db = 
 	
 	fc_bin, conf, binary = compute_mean_fc(fc_index_arr, np.arange(len(frame_fft)), SR)
 
-	print("mean_fc: ", fc_bin*SR/frame_size ," conf: ", conf ," binary_result: ", binary)
+	#print("mean_fc: ", fc_bin*SR/frame_size ," conf: ", conf ," binary_result: ", binary)
 
 	return fc_bin*SR/frame_size, conf, binary
 
@@ -166,7 +166,7 @@ def compute_mean_fc(fc_index_arr:list, xticks:list, SR:float):
 		conf: (float) confidence value between 0 and 1
 		(bool): True if the file is predicted to have the issue, False otherwise
 	"""
-	fig,ax = plt.subplots(3,1,figsize=(15,9))
+	#fig,ax = plt.subplots(3,1,figsize=(15,9))
 	hist = compute_histogram(fc_index_arr, xticks) #computation of the histogram
 	most_likely_bin = np.argmax(hist) #bin value of the highest peak of the histogram
 
@@ -176,22 +176,22 @@ def compute_mean_fc(fc_index_arr:list, xticks:list, SR:float):
 		#the highest peak having the highest importance and decreasing as the indexes go further.
 
 		#creation of the confidence scale
-		ax[0].stem(hist)
+		#ax[0].stem(hist)
 		conf_scale = abs(most_likely_bin - np.arange(len(hist))); conf_scale = max(conf_scale) - conf_scale ; conf_scale = conf_scale / max(conf_scale)
-		ax[1].stem(conf_scale)
+		#ax[1].stem(conf_scale)
 		conf = sum(hist * conf_scale) / sum(hist) #computation of the confidence sum, normalised by the histogram length
-		ax[2].stem(hist * conf_scale / sum(hist))
-		plt.show()
+		#ax[2].stem(hist * conf_scale / sum(hist))
+		#plt.show()
 		#return the analog frequency corresponding to the bin, confidence value, and True if the confidence value is higher than 0.6
 		return most_likely_bin, conf, conf>0.6
 	else:
 		#if it falls over the 90% mark, the confidence is computated by summing the square of the 3 samples of the histogram closer to the max
 		#and compare it to the sum of all the values appended to the histogram.
-		ax[0].stem(hist)
+		#ax[0].stem(hist)
 		if most_likely_bin+1 > len(hist)-1: conf = sum(hist[most_likely_bin-1:]**2)		
 		else: conf = sum(hist[most_likely_bin-1:most_likely_bin+1]**2)
 		conf /= sum(hist**2)
-		plt.show()
+		#plt.show()
 		return most_likely_bin, conf, False
 
 def compute_histogram(idx_arr:list, xticks:list, mask = []):
