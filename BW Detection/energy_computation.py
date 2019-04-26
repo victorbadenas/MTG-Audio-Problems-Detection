@@ -5,10 +5,9 @@ import matplotlib.pyplot as plt
 import argparse
 import essentia.standard as estd
 import scipy.signal
+from scipy.interpolate import interp1d
 from essentia import array as esarr
 eps = np.finfo("float").eps
-
-from scipy.interpolate import interp1d
 
 def is_power2(num:int):
 	"""States if a number is a positive power of two
@@ -60,74 +59,15 @@ def get_peaks(sig:list, xticks:list):
 
 	return xval, yval
 
-def get_last_true_index(bool_list:list):
-	"""Given a bool vector, returns the position of the last True value in the array
-
-	Args:
-		bool_list: iterable with boolean values
-
-	Returns:
-		(int) index position of the last True value in the array
-	"""
-	if not any(bool_list): return len(bool_list)-1
+def modify_floor(sig:list, floor_db:float, log=False):
 	
-	for i,item in enumerate(reversed(bool_list)):
-		if item: return len(bool_list)-1-i
-
-def compute_fc(interp_frame:list):
-	
-	d = np.diff(interp_frame)[:-2]
-	d = np.append(d,np.zeros(3))
-	#d[d>0] = 0
-	#d[d!=min(d)]=0
-
-	#plt.plot(d)
-	#plt.show()
-	
-	return get_last_true_index( d <= (min(d) + 2) )
-
-def compute_mean_fc(hist:list, fc_index_arr:list, f:list, SR:float):
-	most_likely_bin = np.argmax(hist)
-	mean_fc = f[most_likely_bin]
-	#print("len(f):",len(f))
-	#print("most_likely_bin:",most_likely_bin)
-	#std_bin = int( min(np.std(fc_index_arr), len(f)/12) )
-	#std = std_bin/len(f)*(SR/2)
-	#print("std_bin:",std_bin)
-	#conf = hist * abs(np.arange(len(hist)) - most_likely_bin) / ( max(abs(np.arange(len(hist)) - most_likely_bin)) * sum(hist))
-
-	
-	if mean_fc < .9 * SR / 2:
-		conf_scale = most_likely_bin - abs(most_likely_bin - np.arange(len(hist))) #greater around the peak
-		conf_scale = conf_scale / max(conf_scale)
-		conf = sum(hist * conf_scale) / sum(hist)
-		return mean_fc, conf, conf>0.6
+	if log:
+		sig[sig < (max(sig) + floor_db)] = max(sig) + floor_db
+		return sig
 	else:
-		if most_likely_bin+1 > len(hist)-1: conf = sum(hist[most_likely_bin-1:]**2)		
-		else: conf = sum(hist[most_likely_bin-1:most_likely_bin+1]**2)
-		conf /= sum(hist**2)
-		return mean_fc, conf, False
-	hist /= sum(hist)
-	#if most_likely_bin-int(std_bin/2) < 0:
-	#	conf = sum( hist[:most_likely_bin+int(std_bin/2)] )
-	#elif most_likely_bin+int(std_bin/2) > len(hist):
-	#	conf = sum( hist[:most_likely_bin-int(std_bin/2)] )
-	#else:
-	#	conf = sum( hist[:most_likely_bin-int(std_bin/2)] ) + sum( hist[most_likely_bin+int(std_bin/2):] )
-	#conf = 1 - conf
-
-	#plt.stem(conf)
-	#plt.show()
-
-	#if conf > 0.6:
-	#	if mean_fc < (0.9 * SR/2):
-	#		binary_result = True
-	#	else:
-	#		binary_result = False
-	#else:
-	#	binary_result = False
-
-	#return mean_fc, conf, binary_result
+		floor = 10 ** (floor_db/20)
+		sig[sig < (max(sig) * floor)] = max(sig) * floor
+		return sig
 
 def compute_spectral_envelope(frame_fft:list, xticks:list, kind="linear"):
 	"""Compute the spectral envelope through a peak interpolation method
@@ -154,34 +94,78 @@ def compute_spectral_envelope(frame_fft:list, xticks:list, kind="linear"):
 	hp = np.append(hp,frame_fft[-1]) ; hp = np.append(frame_fft[0],hp) #appending the first and last value of the function
 	return interp1d(xp,hp,kind=kind)(xticks) #interpolating and returning
 
-def modify_floor(sig:list, floor_db:float, log=False):
-	
-	if log:
-		sig[sig < (max(sig) + floor_db)] = max(sig) + floor_db
-		return sig
-	else:
-		floor = 10 ** (floor_db/20)
-		sig[sig < (max(sig) * floor)] = max(sig) * floor
-		return sig
+def compute_histogram(idx_arr:list, xticks:list, mask = []):
+	"""Computes the histogram of an array of ints
 
-def compute_histogram(idx_arr:list, f:list, mask = []):
+	Args:
+		idx_arr: (iterable) with int values
+		f: (iterable)x index array for the histogram
+	
+	KWargs:
+		mask: (iterable) int binary array
+
+	Returns:
+		hist: histogram
+	"""
+
+	idx_arr = [int(item) for item in idx_arr]
 	if len(mask) == 0:
-		hist = np.zeros(len(f))
+		hist = np.zeros(len(xticks))
 		for idx in idx_arr:
 			hist[idx] += 1
 		return hist
 	else:
-		hist = np.zeros(len(f))
+		hist = np.zeros(len(xticks))
+		if len(mask) != len(idx_arr): raise ValueError("Inconsistent mask size")
 		for idx, boolean in zip(idx_arr, mask):
 			if boolean:
 				hist[idx] += 1
 		return hist
 
-def energy_verification(frame_fft:list, fc_index:int):
-    return sum(frame_fft[:fc_index]**2)/sum(frame_fft**2) > 0.7
+def compute_mean_fc(fc_index_arr:list, xticks:list, SR:float, hist=[]):
+	"""computes the most possible fc for that audio file
+
+	Args:
+		fc_index_arr: iterable with the predicted fc's per frame
+		xticks: iterable containing the bin2f array
+		SR: (float) Sample Rate
+	
+	Returns:
+		most_likely_f: (float) frequency corresponding to the highest peak in the histogram
+		conf: (float) confidence value between 0 and 1
+		(bool): True if the file is predicted to have the issue, False otherwise
+	"""
+	if len(hist)==0:
+		hist = compute_histogram(fc_index_arr, xticks) #computation of the histogram
+	
+	#fig,ax = plt.subplots(3,1,figsize=(15,9))
+	most_likely_bin = np.argmax(hist) #bin value of the highest peak of the histogram
+
+	#the confidence value changes depending on if most_likely_bin falls under the 90% lower spectrogram or not
+	if most_likely_bin <= .85*len(hist):
+		#if it falls under the 90% lower, the confidence is computed by a weighted sum of the values of the histogram,
+		#the highest peak having the highest importance and decreasing as the indexes go further.
+
+		#creation of the confidence scale
+		#ax[0].stem(hist)
+		conf_scale = abs(most_likely_bin - np.arange(len(hist))); conf_scale = max(conf_scale) - conf_scale ; conf_scale = conf_scale / max(conf_scale)
+		#ax[1].stem(conf_scale)
+		conf = sum(hist * conf_scale) / sum(hist) #computation of the confidence sum, normalised by the histogram length
+		#ax[2].stem(hist * conf_scale / sum(hist))
+		#plt.show()
+		#return the analog frequency corresponding to the bin, confidence value, and True if the confidence value is higher than 0.6
+		return most_likely_bin, conf, conf>0.6
+	else:
+		#if it falls over the 90% mark, the confidence is computated by summing the square of the 3 samples of the histogram closer to the max
+		#and compare it to the sum of all the values appended to the histogram.
+		#ax[0].stem(hist)
+		conf = sum(hist[int(.85*len(hist)):]**2)
+		conf /= sum(hist**2)
+		#plt.show()
+		return most_likely_bin, conf, False
 
 def detectBW(fpath:str, frame_size:float, hop_size:float, floor_db:float, oversample_f:int):
-
+	
 	if os.path.splitext(fpath)[1] != ".wav": raise ValueError("file must be wav") #check if the file has a wav extension, else: raise error
 	if not is_power2(oversample_f): raise ValueError("oversample factor can only be 1, 2 or 4") #check if the oversample factor is a power of two
 
@@ -191,49 +175,51 @@ def detectBW(fpath:str, frame_size:float, hop_size:float, floor_db:float, oversa
 	if audio.shape[1] != 1: audio = (audio[:,0] + audio[:,1]) / 2 #if stereo: downmix to mono
 	
 	frame_size *= oversample_f #if an oversample factor is desired, apply it
-	f = np.arange(int(frame_size / 2) + 1)/frame_size * SR #initialize frequency vector or xticks
-	
+
 	fc_index_arr = []
+	hist = np.zeros(int(frame_size/2+1))
 	interpolated_spectrum = np.zeros(int(frame_size / 2) + 1) #initialize interpolated_spectrum array
 	fft = estd.FFT(size = frame_size) #declare FFT function
 	window = estd.Windowing(size=frame_size, type="hann") #declare windowing function
+	avg_frames = np.zeros(int(frame_size/2)+1)
+
+	max_nrg = max([sum(abs(fft(window(frame)))**2) for frame in 
+				estd.FrameGenerator(audio, frameSize=frame_size, hopSize=hop_size, startFromZero=True)])
 
 	for i,frame in enumerate(estd.FrameGenerator(audio, frameSize=frame_size, hopSize=hop_size, startFromZero=True)):
 		
 		frame = window(frame) #apply window to the frame
 		frame_fft = abs(fft(frame))
-		frame_fft_db = 20 * np.log10(frame_fft + eps) #calculate frame fft values in db
-		#energy_arr.append(energy(frame_fft))
-		interp_frame = compute_spectral_envelope(frame_fft_db, f, "linear") #compute the linear interpolation between the values of the maxima of the spectrum
-		interp_frame = modify_floor(interp_frame, floor_db, log=True)
+		#print(sum(frame_fft**2))
+		nrg = sum(frame_fft**2)
 
-		fc_index = compute_fc(interp_frame)
-		fc_index_arr.append(fc_index)
-
-		if energy_verification(frame_fft, fc_index):
-			fc_index_arr.append(fc_index)
-		#else:
-		#	fc_index_arr.append(len(f)-1)
-
-		interpolated_spectrum += interp_frame #append the values to window
+		if nrg >= 0.1*max_nrg:
+			frame_fft = frame_fft / np.sqrt(nrg)
+			#print(sum(frame_fft**2))
+			for i in range(len(frame_fft)):
+				#print(sum(frame_fft[:i]**2))
+				if sum(frame_fft[:i]**2) >= 0.99999:
+					#print(i)
+					#fc_index_arr.append(i)
+					hist[i] += nrg
+					break
+			avg_frames = avg_frames + frame_fft
 	
-	interpolated_spectrum /= i + 1
-
-	#energy_arr = normalise(energy_arr)
-	#energy_mask = energy_arr>0.05
-	if len(fc_index_arr) == 0: fc_index_arr = [frame_size]
+	if len(fc_index_arr): fc_index_arr.append(int(frame_size/2)+1)
 	
-	hist = compute_histogram(fc_index_arr, f)
-	fc, conf, binary = compute_mean_fc(hist, fc_index_arr, f, SR)
-
-	print("filename: ", fpath ,"mean_fc: ", fc ," conf: ", conf ," binary_result: ", binary)
-
-	fig, ax = plt.subplots(3,1,figsize=(15,9))
-	ax[0].plot(fc_index_arr,"x")
-	ax[1].stem(f,hist)
-	ax[2].plot(f, interpolated_spectrum)
-	ax[2].axvline(x=fc,color="r")
+	most_likely_bin, conf, binary = compute_mean_fc(fc_index_arr, np.arange(int(frame_size/2)+2), SR, hist=hist)
+	print(most_likely_bin, conf, binary)
+	#hist = compute_histogram(fc_index_arr, np.arange(int(frame_size/2)+2))
+	avg_frames /= (i+1)
+	#assert False
+	print("f={}".format(str(most_likely_bin*SR / frame_size)))
+	fig, ax = plt.subplots(2,1,figsize=(15,9))
+	ax[0].plot(20 * np.log10(avg_frames + eps))
+	ax[0].axvline(x=np.argmax(hist), color = 'r')
+	ax[1].stem(hist)
 	plt.show()
+
+	#frame_fft_db = 20 * np.log10(frame_fft + eps) #calculate frame fft values in db
 
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser(description="Calculates the effective BW of a file")
