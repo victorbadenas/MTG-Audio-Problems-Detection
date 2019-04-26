@@ -122,7 +122,21 @@ def compute_histogram(idx_arr:list, xticks:list, mask = []):
 				hist[idx] += 1
 		return hist
 
-def compute_mean_fc(fc_index_arr:list, xticks:list, SR:float, hist=[]):
+def get_last_true_index(bool_list:list):
+	"""Given a bool vector, returns the position of the last True value in the array
+
+	Args:
+		bool_list: iterable with boolean values
+
+	Returns:
+		(int) index position of the last True value in the array
+	"""
+	if not any(bool_list): return len(bool_list)-1
+	
+	for i,item in enumerate(reversed(bool_list)):
+		if item: return len(bool_list)-1-i
+
+def compute_mean_fc(fft_lin:list, fc_index_arr:list, xticks:list, SR:float, hist=[]):
 	"""computes the most possible fc for that audio file
 
 	Args:
@@ -138,30 +152,27 @@ def compute_mean_fc(fc_index_arr:list, xticks:list, SR:float, hist=[]):
 	if len(hist)==0:
 		hist = compute_histogram(fc_index_arr, xticks) #computation of the histogram
 	
-	#fig,ax = plt.subplots(3,1,figsize=(15,9))
-	most_likely_bin = np.argmax(hist) #bin value of the highest peak of the histogram
-
-	#the confidence value changes depending on if most_likely_bin falls under the 90% lower spectrogram or not
+	hist[hist<.1*max(hist)]=0
+	#most_likely_bin = np.argmax(hist) #bin value of the highest peak of the histogram
+	most_likely_bin = get_last_true_index(hist != 0)
+	#the confidence value changes depending on if most_likely_bin falls under the 85% lower spectrogram or not
 	if most_likely_bin <= .85*len(hist):
-		#if it falls under the 90% lower, the confidence is computed by a weighted sum of the values of the histogram,
+		#if it falls under the 85% lower, the confidence is computed by a weighted sum of the values of the histogram,
 		#the highest peak having the highest importance and decreasing as the indexes go further.
 
 		#creation of the confidence scale
-		#ax[0].stem(hist)
 		conf_scale = abs(most_likely_bin - np.arange(len(hist))); conf_scale = max(conf_scale) - conf_scale ; conf_scale = conf_scale / max(conf_scale)
-		#ax[1].stem(conf_scale)
 		conf = sum(hist * conf_scale) / sum(hist) #computation of the confidence sum, normalised by the histogram length
-		#ax[2].stem(hist * conf_scale / sum(hist))
-		#plt.show()
-		#return the analog frequency corresponding to the bin, confidence value, and True if the confidence value is higher than 0.6
-		return most_likely_bin, conf, conf>0.6
+
+		conf2 = sum(fft_lin[:most_likely_bin]) / sum(fft_lin)
+
+		conf = min(conf,conf2)
+		#return the analog frequency corresponding to the bin, confidence value, and True if the confidence value is higher than 0.85
+		return most_likely_bin, conf, conf>0.77
 	else:
-		#if it falls over the 90% mark, the confidence is computated by summing the square of the 3 samples of the histogram closer to the max
+		#if it falls over the 85% mark, the confidence is computated by summing the square of the 3 samples of the histogram closer to the max
 		#and compare it to the sum of all the values appended to the histogram.
-		#ax[0].stem(hist)
-		conf = sum(hist[int(.85*len(hist)):]**2)
-		conf /= sum(hist**2)
-		#plt.show()
+		conf = sum(hist[int(.85*len(hist)):]**2) / sum(hist**2)
 		return most_likely_bin, conf, False
 
 def detectBW(fpath:str, frame_size:float, hop_size:float, floor_db:float, oversample_f:int):
@@ -178,7 +189,7 @@ def detectBW(fpath:str, frame_size:float, hop_size:float, floor_db:float, oversa
 
 	fc_index_arr = []
 	hist = np.zeros(int(frame_size/2+1))
-	interpolated_spectrum = np.zeros(int(frame_size / 2) + 1) #initialize interpolated_spectrum array
+	#interpolated_spectrum = np.zeros(int(frame_size / 2) + 1) #initialize interpolated_spectrum array
 	fft = estd.FFT(size = frame_size) #declare FFT function
 	window = estd.Windowing(size=frame_size, type="hann") #declare windowing function
 	avg_frames = np.zeros(int(frame_size/2)+1)
@@ -190,36 +201,29 @@ def detectBW(fpath:str, frame_size:float, hop_size:float, floor_db:float, oversa
 		
 		frame = window(frame) #apply window to the frame
 		frame_fft = abs(fft(frame))
-		#print(sum(frame_fft**2))
 		nrg = sum(frame_fft**2)
 
 		if nrg >= 0.1*max_nrg:
 			frame_fft = frame_fft / np.sqrt(nrg)
-			#print(sum(frame_fft**2))
 			for i in range(len(frame_fft)):
-				#print(sum(frame_fft[:i]**2))
 				if sum(frame_fft[:i]**2) >= 0.99999:
-					#print(i)
-					#fc_index_arr.append(i)
+					fc_index_arr.append(i)
 					hist[i] += nrg
 					break
 			avg_frames = avg_frames + frame_fft
 	
 	if len(fc_index_arr): fc_index_arr.append(int(frame_size/2)+1)
 	
-	most_likely_bin, conf, binary = compute_mean_fc(fc_index_arr, np.arange(int(frame_size/2)+2), SR, hist=hist)
-	print(most_likely_bin, conf, binary)
-	#hist = compute_histogram(fc_index_arr, np.arange(int(frame_size/2)+2))
 	avg_frames /= (i+1)
-	#assert False
-	print("f={}".format(str(most_likely_bin*SR / frame_size)))
-	fig, ax = plt.subplots(2,1,figsize=(15,9))
-	ax[0].plot(20 * np.log10(avg_frames + eps))
-	ax[0].axvline(x=np.argmax(hist), color = 'r')
-	ax[1].stem(hist)
-	plt.show()
 
-	#frame_fft_db = 20 * np.log10(frame_fft + eps) #calculate frame fft values in db
+	most_likely_bin, conf, binary = compute_mean_fc(avg_frames, fc_index_arr, np.arange(int(frame_size/2)+2), SR, hist=hist)
+
+	print("f={}, conf={}, problem={}".format(str(most_likely_bin*SR / frame_size), conf, str(binary)))
+	#fig, ax = plt.subplots(2,1,figsize=(15,9))
+	#ax[0].plot(20 * np.log10(avg_frames + eps))
+	#ax[0].axvline(x=most_likely_bin, color = 'r')
+	#ax[1].stem(hist)
+	#plt.show()
 
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser(description="Calculates the effective BW of a file")
