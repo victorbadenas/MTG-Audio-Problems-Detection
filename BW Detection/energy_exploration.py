@@ -115,7 +115,7 @@ def compute_mean_fc(fft_lin:list, fc_index_arr:list, xticks:list, SR:float, hist
 		conf = sum(hist[int(.85*len(hist)):]) / sum(hist)
 		return most_likely_bin, conf, False
 
-def detectBW(fpath:str, frame_size:float, hop_size:float, floor_db:float, oversample_f:int):
+def detectBW(fpath:str, frame_size:float, hop_size:float, eval_freq:float, oversample_f:int):
 	
 	if os.path.splitext(fpath)[1] != ".wav": raise ValueError("file must be wav") #check if the file has a wav extension, else: raise error
 	if not is_power2(oversample_f): raise ValueError("oversample factor can only be 1, 2 or 4") #check if the oversample factor is a power of two
@@ -126,60 +126,42 @@ def detectBW(fpath:str, frame_size:float, hop_size:float, floor_db:float, oversa
 	if audio.shape[1] != 1: audio = (audio[:,0] + audio[:,1]) / 2 #if stereo: downmix to mono
 	
 	frame_size *= oversample_f #if an oversample factor is desired, apply it
-
-	fc_index_arr = []
-	hist = np.zeros(int(frame_size/2+1))
-	#interpolated_spectrum = np.zeros(int(frame_size / 2) + 1) #initialize interpolated_spectrum array
+	
 	fft = estd.FFT(size = frame_size) #declare FFT function
 	window = estd.Windowing(size=frame_size, type="hann") #declare windowing function
 	avg_frames = np.zeros(int(frame_size/2)+1)
 
 	max_nrg = max([sum(abs(fft(window(frame)))**2) for frame in 
 				estd.FrameGenerator(audio, frameSize=frame_size, hopSize=hop_size, startFromZero=True)])
-	#tst = []
-	#fc_idx = int(8000 / SR * frame_size)
+	tst = []
+	fc_idx = int(np.ceil(eval_freq / SR * frame_size))
+
 	for i,frame in enumerate(estd.FrameGenerator(audio, frameSize=frame_size, hopSize=hop_size, startFromZero=True)):
 		
-		frame = window(frame) #apply window to the frame
-		frame_fft = abs(fft(frame))
-		nrg = sum(frame_fft**2)
+		frame_fft = abs(fft(window(frame)))
 
-		if nrg >= 0.1*max_nrg:
-			frame_fft = frame_fft / np.sqrt(nrg)
-			for i in reversed(range(len(frame_fft))):
-				#print("{}:{}".format(i,sum(frame_fft[i:]**2)))
-				if sum(frame_fft[i:]**2) >= 6e-7: #8.153323964532925e-07 4.387740134556889e-07
-					fc_index_arr.append(i)
-					hist[i] += nrg
-					break
-			#assert False
+		if sum(frame_fft**2) >= 0.1*max_nrg:
 
-			#tst.append(sum(frame_fft[fc_idx:]**2))
+			tst.append(sum(frame_fft[fc_idx:]**2))
 			avg_frames = avg_frames + frame_fft
 	
-	#print("avg:", sum(tst)/len(tst))
-	#assert False
-	if len(fc_index_arr)==0: 
-		fc_index_arr.append(int(frame_size/2)+1)
-		hist[int(frame_size/2)] += 1
-	
-	avg_frames /= (i+1)
-	#print(hist)
-	most_likely_bin, conf, binary = compute_mean_fc(avg_frames, fc_index_arr, np.arange(int(frame_size/2)+2), SR, hist=hist)
+	print(sum(tst)/len(tst))
 
-	print("f={}, conf={}, problem={}".format(str(most_likely_bin*SR / frame_size), conf, str(binary)))
-	fig, ax = plt.subplots(2,1,figsize=(15,9))
-	ax[0].plot(20 * np.log10(avg_frames + eps))
-	ax[0].axvline(x=most_likely_bin, color = 'r')
-	ax[1].stem(hist)
-	plt.show()
+	avg_frames /= (i+1)
+
+	plt.plot(20 * np.log10(avg_frames + eps))
+	plt.axvline(x=fc_idx, color = 'r')
+	plt.savefig(os.path.splitext(fpath)[0] + ".png")
+	plt.close()
+
+	return sum(tst)/len(tst)
 
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser(description="Calculates the effective BW of a file")
 	parser.add_argument("fpath", help="relative path to the file")
+	parser.add_argument("eval_freq", help="Evaluation frequency for where the energy must be computed")
 	parser.add_argument("--frame_size", help="frame_size for the analysis fft (default=256)",default=256,required=False)
 	parser.add_argument("--hop_size", help="hop_size for the analysis fft (default=128)",default=128,required=False)
-	parser.add_argument("--floor_db", help="db value that will be considered as -inf",default=-90,required=False)
 	parser.add_argument("--oversample", help="(int) factor for the oversampling in frequency domain. Must be a power of 2",default=1,required=False)
 	args = parser.parse_args()
-	detectBW(args.fpath, args.frame_size, args.hop_size, args.floor_db, int(args.oversample))
+	detectBW(args.fpath, args.frame_size, args.hop_size, float(args.eval_freq), args.oversample)
