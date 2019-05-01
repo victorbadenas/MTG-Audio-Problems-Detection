@@ -134,18 +134,23 @@ def detectBW(fpath:str, frame_size:float, hop_size:float, eval_freq:float, overs
 	max_nrg = max([sum(abs(fft(window(frame)))**2) for frame in 
 				estd.FrameGenerator(audio, frameSize=frame_size, hopSize=hop_size, startFromZero=True)])
 	tst = []
+	dif_arr = []
 	fc_idx = int(np.ceil(eval_freq / SR * frame_size))
 
 	for i,frame in enumerate(estd.FrameGenerator(audio, frameSize=frame_size, hopSize=hop_size, startFromZero=True)):
 		
 		frame_fft = abs(fft(window(frame)))
+		nrg = sum(frame_fft**2)
 
 		if sum(frame_fft**2) >= 0.1*max_nrg:
-
-			tst.append(sum(frame_fft[fc_idx:]**2))
+			res = sum(frame_fft[fc_idx:]/fc_idx)
+			dif = np.diff(frame_fft)
+			dif_arr.append(dif[fc_idx-1])
+			tst.append(res)
 			avg_frames = avg_frames + frame_fft
 	
-	print(sum(tst)/len(tst))
+	print("sum:",sum(tst)/len(tst))
+	print("Dif: ",sum(dif_arr)/len(dif_arr))
 
 	avg_frames /= (i+1)
 

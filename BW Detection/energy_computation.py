@@ -93,8 +93,8 @@ def compute_mean_fc(fft_lin:list, fc_index_arr:list, xticks:list, SR:float, hist
 		hist = compute_histogram(fc_index_arr, xticks) #computation of the histogram
 	
 	hist[hist<.1*max(hist)]=0
-	#most_likely_bin = np.argmax(hist) #bin value of the highest peak of the histogram
-	most_likely_bin = get_last_true_index(hist != 0)
+	most_likely_bin = np.argmax(hist) #bin value of the highest peak of the histogram
+	#most_likely_bin = get_last_true_index(hist != 0)
 	#the confidence value changes depending on if most_likely_bin falls under the 85% lower spectrogram or not
 	if most_likely_bin <= .85*len(hist):
 		#if it falls under the 85% lower, the confidence is computed by a weighted sum of the values of the histogram,
@@ -136,8 +136,10 @@ def detectBW(fpath:str, frame_size:float, hop_size:float, floor_db:float, oversa
 
 	max_nrg = max([sum(abs(fft(window(frame)))**2) for frame in 
 				estd.FrameGenerator(audio, frameSize=frame_size, hopSize=hop_size, startFromZero=True)])
-	#tst = []
-	#fc_idx = int(8000 / SR * frame_size)
+
+	dif_arr = []
+	dif_avg = np.zeros(int(frame_size/2))
+	counter_dif_avg = 0
 	for i,frame in enumerate(estd.FrameGenerator(audio, frameSize=frame_size, hopSize=hop_size, startFromZero=True)):
 		
 		frame = window(frame) #apply window to the frame
@@ -145,18 +147,28 @@ def detectBW(fpath:str, frame_size:float, hop_size:float, floor_db:float, oversa
 		nrg = sum(frame_fft**2)
 
 		if nrg >= 0.1*max_nrg:
-			frame_fft = frame_fft / np.sqrt(nrg)
+			#frame_fft = frame_fft / np.sqrt(nrg)
 			for i in reversed(range(len(frame_fft))):
 				#print("{}:{}".format(i,sum(frame_fft[i:]**2)))
-				if sum(frame_fft[i:]**2) >= 6e-7: #8.153323964532925e-07 4.387740134556889e-07
+				if sum(frame_fft[i:]/i) >= 1e-5:
+					dif = np.diff(frame_fft)
+					dif_avg += dif
+					counter_dif_avg += 1
+					if i-1 >= 0:
+						dif_arr.append(dif[i-1])
+					else:
+						dif_arr.append(dif[0])
 					fc_index_arr.append(i)
 					hist[i] += nrg
 					break
+
 			#assert False
 
 			#tst.append(sum(frame_fft[fc_idx:]**2))
 			avg_frames = avg_frames + frame_fft
-	
+
+	if counter_dif_avg == 0:
+		counter_dif_avg = 1
 	#print("avg:", sum(tst)/len(tst))
 	#assert False
 	if len(fc_index_arr)==0: 
@@ -167,12 +179,16 @@ def detectBW(fpath:str, frame_size:float, hop_size:float, floor_db:float, oversa
 	#print(hist)
 	most_likely_bin, conf, binary = compute_mean_fc(avg_frames, fc_index_arr, np.arange(int(frame_size/2)+2), SR, hist=hist)
 
-	print("f={}, conf={}, problem={}".format(str(most_likely_bin*SR / frame_size), conf, str(binary)))
-	fig, ax = plt.subplots(2,1,figsize=(15,9))
-	ax[0].plot(20 * np.log10(avg_frames + eps))
-	ax[0].axvline(x=most_likely_bin, color = 'r')
-	ax[1].stem(hist)
-	plt.show()
+	print("f={:0=2f}, conf={:0=2f}, problem={}".format(
+		most_likely_bin*SR / frame_size, conf, str(binary)))
+	#fig, ax = plt.subplots(3,1,figsize=(15,9))
+	#ax[0].plot(20 * np.log10(avg_frames + eps))
+	#ax[0].axvline(x=most_likely_bin, color = 'r')
+	#ax[0].set_ylim(bottom=-120)
+	#ax[1].stem(hist)
+	#ax[2].stem(dif_avg / counter_dif_avg)
+	#ax[2].axvline(x=most_likely_bin, color='r')
+	#plt.show()
 
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser(description="Calculates the effective BW of a file")
