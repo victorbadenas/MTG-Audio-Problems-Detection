@@ -138,7 +138,7 @@ def detectBW(fpath:str, frame_size:float, hop_size:float, eval_freq:float, overs
 
 	for i,frame in enumerate(estd.FrameGenerator(audio, frameSize=frame_size, hopSize=hop_size, startFromZero=True)):
 		
-		frame_fft = abs(fft(window(frame))) / max_nrg
+		frame_fft = abs(fft(window(frame)))
 		nrg = sum(frame_fft**2)
 
 		if sum(frame_fft**2) >= 0.1*max_nrg:
