@@ -1,4 +1,5 @@
 from scipy.interpolate import interp1d
+from scipy.special import entr
 import os
 import sys
 import numpy as np
@@ -69,35 +70,83 @@ def compute_envelope(x: list, xticks: list, kind="linear"):
 	hp = np.append(x[0], hp)
 	return interp1d(xp, hp, kind=kind)(xticks)  # interpolating and returning
 
-def main(fpath: str, frame_size: float, hop_size: float):
+def compute_ac_diff_sum(frame: list, normalize=True):
+
+	if max(abs(frame))!=0:
+		frame = frame / max(abs(frame))
+	frame /= len(frame)
+	ac = autocorr(frame)
+	if normalize:
+	    ac /= max(ac)
+	return sum(abs(np.diff(ac)))
+
+def compute_entropy(frame: list):
+	frame -= frame.min()
+	#print(max(frame), min(frame))
+	frame = frame.astype('int64')
+	nbins = max(frame) + 1
+	# count the number of occurrences for each unique integer between 0 and x.max()
+	# in each row of x
+	counts = np.bincount(frame, minlength=nbins)
+
+	# divide by number of columns to get the probability of each unique value
+	p = counts / float(len(frame))
+
+	# compute Shannon entropy in bits
+	return -np.sum(entr(p))
+
+def main(fpath: str, frame_size: float, hop_size: float, entropy_th: float):
 
 	if os.path.splitext(fpath)[1] != ".wav":
 		# check if the file has a wav extension, else: raise error
 		raise ValueError("file must be wav")
 
 	#audio loader returns x, sample_rate, number_channels, md5, bit_rate, codec, of which only the first 3 are needed
-	audio, _ = estd.AudioLoader(filename=fpath)()[:2]
+	audio, SR, channels, _, br, _ = estd.AudioLoader(filename=fpath)()
+
+	b = int(br / SR / channels) #number of bits used to code the fpath signal
 
 	if audio.shape[1] != 1:
-		audio = (audio[:, 0] + audio[:, 1]) / 2  # if stereo: downmix to mono
-
+		audio = audio[:, 0]  # if stereo: downmix to mono
+	b = min(b,16)
+	audio = esarr(audio.astype("float16"))
 	#fft = estd.FFT(size=frame_size)
 	#window = estd.Windowing(size=frame_size, type="hann")
-	arr = []
+	#ac_arr = []
+	ent_arr = []
+	sig_pwr = 0
+	noise_pwr = 0
+	sig_cnt = 0
+	noise_cnt = 0
 	for frame in tqdm(estd.FrameGenerator(audio, frameSize=frame_size, hopSize=hop_size, startFromZero=True)):
-		frame = frame / max(frame) / frame_size
-		ac = autocorr(frame)
-		ac = ac / max(ac)
-		#plt.plot(ac)
-		#plt.show()
-		arr.append(sum(abs(np.diff(ac))))
-    
+		#ac = compute_ac_diff_sum(frame)
+		frame_int = ((2**(b-1)) * frame).astype('int')
+		ent = compute_entropy(frame_int)
+		if ent < entropy_th:
+			sig_pwr += sum(frame**2)
+			sig_cnt += 1
+		else:
+			noise_pwr += sum(frame**2)
+			noise_cnt += 1
+		ent_arr.append(ent)
+		#ac_arr.append(ac)
+	if noise_cnt == 0:
+		SNR = np.inf
+	elif sig_cnt == 0:
+		SNR = 10 * log10(eps)
+	else:
+		sig_pwr /= sig_cnt
+		noise_pwr /= noise_cnt
+		SNR = 10 * np.log10(sig_pwr/noise_pwr)
+	print("SNR: ", SNR)
 	#arr /= max(arr)
 	#arr_env = compute_envelope(arr, np.arange(len(arr)))
 	fig, ax = plt.subplots(2, 1, figsize=(15, 9))
 	ax[0].plot(audio)
 	#ax[1].plot(arr_env)
-	ax[1].plot(arr)
+	#ax[1].plot(ac_arr)
+	ax[1].plot(ent_arr)
+	ax[1].hlines(entropy_th,xmin = 0, xmax = len(ent_arr))
 	plt.show()
 
 if __name__ == "__main__":
@@ -108,5 +157,7 @@ if __name__ == "__main__":
 		"--frame_size", help="frame_size for the analysis fft (default=256)", default=256, required=False)
 	parser.add_argument(
 		"--hop_size", help="hop_size for the analysis fft (default=128)", default=128, required=False)
+	parser.add_argument(
+		"--entropy_th", help="entropy threshold for stochastic frame detection (default=-4)", default=-4, required=False)
 	args = parser.parse_args()
-	main(args.fpath, args.frame_size, args.hop_size)
+	main(args.fpath, args.frame_size, args.hop_size, args.entropy_th)
