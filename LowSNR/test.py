@@ -8,7 +8,6 @@ import argparse
 import essentia.standard as estd
 import scipy.signal
 from essentia import array as esarr
-from tqdm import tqdm
 eps = np.finfo("float").eps
 
 def autocorr(x):
@@ -80,11 +79,11 @@ def compute_ac_diff_sum(frame: list, normalize=True):
 	    ac /= max(ac)
 	return sum(abs(np.diff(ac)))
 
-def compute_entropy(frame: list):
+def compute_entropy(frame: list, bit_depth: int):
 	frame -= frame.min()
 	#print(max(frame), min(frame))
 	frame = frame.astype('int64')
-	nbins = max(frame) + 1
+	nbins = 2**bit_depth
 	# count the number of occurrences for each unique integer between 0 and x.max()
 	# in each row of x
 	counts = np.bincount(frame, minlength=nbins)
@@ -93,7 +92,7 @@ def compute_entropy(frame: list):
 	p = counts / float(len(frame))
 
 	# compute Shannon entropy in bits
-	return -np.sum(entr(p))
+	return np.sum(entr(p) / bit_depth)
 
 def main(fpath: str, frame_size: float, hop_size: float, entropy_th: float):
 
@@ -108,8 +107,10 @@ def main(fpath: str, frame_size: float, hop_size: float, entropy_th: float):
 
 	if audio.shape[1] != 1:
 		audio = audio[:, 0]  # if stereo: downmix to mono
+	audio = audio.astype("float32") / max(audio.astype("float32"))
 	b = min(b,16)
 	audio = esarr(audio.astype("float16"))
+	max_enrg = 
 	#fft = estd.FFT(size=frame_size)
 	#window = estd.Windowing(size=frame_size, type="hann")
 	#ac_arr = []
@@ -118,10 +119,11 @@ def main(fpath: str, frame_size: float, hop_size: float, entropy_th: float):
 	noise_pwr = 0
 	sig_cnt = 0
 	noise_cnt = 0
-	for frame in tqdm(estd.FrameGenerator(audio, frameSize=frame_size, hopSize=hop_size, startFromZero=True)):
+	for frame in estd.FrameGenerator(audio, frameSize=frame_size, hopSize=hop_size, startFromZero=True):
 		#ac = compute_ac_diff_sum(frame)
+		#plt.plot(frame); plt.show()
 		frame_int = ((2**(b-1)) * frame).astype('int')
-		ent = compute_entropy(frame_int)
+		ent = compute_entropy(frame_int, b)
 		if ent < entropy_th:
 			sig_pwr += sum(frame**2)
 			sig_cnt += 1
@@ -133,12 +135,13 @@ def main(fpath: str, frame_size: float, hop_size: float, entropy_th: float):
 	if noise_cnt == 0:
 		SNR = np.inf
 	elif sig_cnt == 0:
-		SNR = 10 * log10(eps)
+		SNR = 10 * np.log10(eps)
 	else:
 		sig_pwr /= sig_cnt
 		noise_pwr /= noise_cnt
 		SNR = 10 * np.log10(sig_pwr/noise_pwr)
 	print("SNR: ", SNR)
+	#print("Max Ent: ", max(ent_arr))
 	#arr /= max(arr)
 	#arr_env = compute_envelope(arr, np.arange(len(arr)))
 	fig, ax = plt.subplots(2, 1, figsize=(15, 9))
@@ -154,10 +157,10 @@ if __name__ == "__main__":
 		description="Calculates the effective BW of a file")
 	parser.add_argument("fpath", help="relative path to the file")
 	parser.add_argument(
-		"--frame_size", help="frame_size for the analysis fft (default=256)", default=256, required=False)
+		"--frame_size", help="frame_size for the analysis fft (default=1024)", default=1024, required=False)
 	parser.add_argument(
-		"--hop_size", help="hop_size for the analysis fft (default=128)", default=128, required=False)
+		"--hop_size", help="hop_size for the analysis fft (default=512)", default=512, required=False)
 	parser.add_argument(
-		"--entropy_th", help="entropy threshold for stochastic frame detection (default=-4)", default=-4, required=False)
+		"--entropy_th", help="entropy threshold for stochastic frame detection (default=0.5)", default=0.5, required=False)
 	args = parser.parse_args()
-	main(args.fpath, args.frame_size, args.hop_size, args.entropy_th)
+	main(args.fpath, int(args.frame_size), int(args.hop_size), float(args.entropy_th))
