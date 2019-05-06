@@ -83,7 +83,7 @@ def compute_entropy(frame: list, bit_depth: int):
 	frame -= frame.min()
 	#print(max(frame), min(frame))
 	frame = frame.astype('int64')
-	nbins = 2**bit_depth
+	nbins = max(frame)+1 #2**bit_depth
 	# count the number of occurrences for each unique integer between 0 and x.max()
 	# in each row of x
 	counts = np.bincount(frame, minlength=nbins)
@@ -92,7 +92,10 @@ def compute_entropy(frame: list, bit_depth: int):
 	p = counts / float(len(frame))
 
 	# compute Shannon entropy in bits
-	return np.sum(entr(p) / bit_depth)
+	if len(p)==0:
+		return 0
+	else:
+		return np.sum(entr(p) / np.log2(len(p)))
 
 def main(fpath: str, frame_size: float, hop_size: float, entropy_th: float):
 
@@ -110,28 +113,54 @@ def main(fpath: str, frame_size: float, hop_size: float, entropy_th: float):
 	audio = audio.astype("float32") / max(audio.astype("float32"))
 	b = min(b,16)
 	audio = esarr(audio.astype("float16"))
-	max_enrg = 
+	max_nrg = max([sum(frame**2) for frame in
+                estd.FrameGenerator(audio, frameSize=frame_size, hopSize=hop_size, startFromZero=True)])
 	#fft = estd.FFT(size=frame_size)
 	#window = estd.Windowing(size=frame_size, type="hann")
-	#ac_arr = []
+	ac_arr = []
 	ent_arr = []
+	nrg_arr = []
 	sig_pwr = 0
 	noise_pwr = 0
 	sig_cnt = 0
 	noise_cnt = 0
+	ac_th = 0.01
 	for frame in estd.FrameGenerator(audio, frameSize=frame_size, hopSize=hop_size, startFromZero=True):
+		ac = autocorr(frame)
+		ac = abs(ac)
+		ac /= sum(ac)
+		ac = ac[int(len(ac)/2)]
+		nrg = sum(frame**2)
+		ac_arr.append(ac)
+		nrg_arr.append(nrg)
+		if nrg < 0.1*max_nrg:
+			noise_pwr += nrg**2
+			noise_cnt += 1
+		else:
+			if ac < ac_th:
+				sig_pwr += nrg**2
+				sig_cnt += 1
+			else:
+				noise_pwr += nrg**2
+				noise_cnt += 1
 		#ac = compute_ac_diff_sum(frame)
 		#plt.plot(frame); plt.show()
+		"""
+		nrg = sum(frame**2)
 		frame_int = ((2**(b-1)) * frame).astype('int')
 		ent = compute_entropy(frame_int, b)
-		if ent < entropy_th:
-			sig_pwr += sum(frame**2)
-			sig_cnt += 1
-		else:
-			noise_pwr += sum(frame**2)
-			noise_cnt += 1
 		ent_arr.append(ent)
-		#ac_arr.append(ac)
+		if nrg < 0.1*max_nrg: 
+			noise_pwr += nrg**2
+			noise_cnt += 1
+		else:
+			if ent < entropy_th:
+				sig_pwr += nrg**2
+				sig_cnt += 1
+			else:
+				noise_pwr += nrg**2
+				noise_cnt += 1
+		"""
 	if noise_cnt == 0:
 		SNR = np.inf
 	elif sig_cnt == 0:
@@ -141,15 +170,17 @@ def main(fpath: str, frame_size: float, hop_size: float, entropy_th: float):
 		noise_pwr /= noise_cnt
 		SNR = 10 * np.log10(sig_pwr/noise_pwr)
 	print("SNR: ", SNR)
+	print("sig: {}, noise: {}".format(sig_cnt, noise_cnt))
 	#print("Max Ent: ", max(ent_arr))
 	#arr /= max(arr)
 	#arr_env = compute_envelope(arr, np.arange(len(arr)))
-	fig, ax = plt.subplots(2, 1, figsize=(15, 9))
+	fig, ax = plt.subplots(3, 1, figsize=(15, 9))
 	ax[0].plot(audio)
 	#ax[1].plot(arr_env)
-	#ax[1].plot(ac_arr)
-	ax[1].plot(ent_arr)
-	ax[1].hlines(entropy_th,xmin = 0, xmax = len(ent_arr))
+	ax[1].plot(ac_arr)
+	#ax[1].plot(ent_arr)
+	#ax[1].hlines(entropy_th,xmin = 0, xmax = len(ent_arr))
+	ax[2].plot(nrg_arr/max_nrg)
 	plt.show()
 
 if __name__ == "__main__":
