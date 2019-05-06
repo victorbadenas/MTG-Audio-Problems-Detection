@@ -10,9 +10,14 @@ import scipy.signal
 from essentia import array as esarr
 eps = np.finfo("float").eps
 
-def autocorr(x):
-    result = np.correlate(x, x, mode='full')
-    return np.concatenate((result[:int(result.size/2)],result[int(result.size/2):]))
+def autocorr(x, mode = "half"):
+	result = np.correlate(x, x, mode='full')
+	if mode == "half":
+		return result[int(result.size/2):]
+	elif mode == "centered":
+		return np.concatenate((result[:int(result.size/2)],result[int(result.size/2):]))
+	else:
+		return result
 
 def get_peaks(sig: list, xticks: list):
 	"""Returns the x,y values of the peaks in sig
@@ -118,26 +123,30 @@ def main(fpath: str, frame_size: float, hop_size: float, entropy_th: float):
 	#fft = estd.FFT(size=frame_size)
 	#window = estd.Windowing(size=frame_size, type="hann")
 	ac_arr = []
-	ent_arr = []
+	#ent_arr = []
 	nrg_arr = []
 	sig_pwr = 0
 	noise_pwr = 0
 	sig_cnt = 0
 	noise_cnt = 0
-	ac_th = 0.01
+	ac_th = 0.6
 	for frame in estd.FrameGenerator(audio, frameSize=frame_size, hopSize=hop_size, startFromZero=True):
-		ac = autocorr(frame)
-		ac = abs(ac)
-		ac /= sum(ac)
-		ac = ac[int(len(ac)/2)]
+		ac = abs(autocorr(frame, mode="half"))
+		#ac /= sum(ac)
+		#plt.plot(ac); plt.show()
 		nrg = sum(frame**2)
+		ac = ac[0]/sum(ac)
 		ac_arr.append(ac)
 		nrg_arr.append(nrg)
+	
+	ac_arr /= max(ac_arr)
+
+	for nrg, ac in zip(nrg_arr, ac_arr):
 		if nrg < 0.1*max_nrg:
 			noise_pwr += nrg**2
 			noise_cnt += 1
 		else:
-			if ac < ac_th:
+			if ac < ac_th*max(ac_arr):
 				sig_pwr += nrg**2
 				sig_cnt += 1
 			else:
@@ -171,17 +180,18 @@ def main(fpath: str, frame_size: float, hop_size: float, entropy_th: float):
 		SNR = 10 * np.log10(sig_pwr/noise_pwr)
 	print("SNR: ", SNR)
 	print("sig: {}, noise: {}".format(sig_cnt, noise_cnt))
+	print("conf: ", 1-abs(noise_cnt-sig_cnt)/(sig_cnt + noise_cnt))
 	#print("Max Ent: ", max(ent_arr))
 	#arr /= max(arr)
 	#arr_env = compute_envelope(arr, np.arange(len(arr)))
-	fig, ax = plt.subplots(3, 1, figsize=(15, 9))
-	ax[0].plot(audio)
+	#_, ax = plt.subplots(3, 1, figsize=(15, 9))
+	#ax[0].plot(audio)
 	#ax[1].plot(arr_env)
-	ax[1].plot(ac_arr)
+	#ax[1].plot(ac_arr)
 	#ax[1].plot(ent_arr)
 	#ax[1].hlines(entropy_th,xmin = 0, xmax = len(ent_arr))
-	ax[2].plot(nrg_arr/max_nrg)
-	plt.show()
+	#ax[2].plot(nrg_arr/max_nrg)
+	#plt.show()
 
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser(
