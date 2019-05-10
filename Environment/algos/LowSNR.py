@@ -14,7 +14,7 @@ def autocorr(x, mode = "half"):
 	else:
 		return result
 
-def lowSNR_detector(audio:list, frame_size=1024, hop_size=512, nrg_th=0.1, ac_th=0.6):
+def lowSNR_detector(audio:list, frame_size=1024, hop_size=512, nrg_th=0.1, ac_th=0.6, snr_th=5):
 
 	if audio.shape[1] > 1:
 		audio = np.reshape(audio, audio.shape[0]*audio.shape[1], order='F')
@@ -61,4 +61,6 @@ def lowSNR_detector(audio:list, frame_size=1024, hop_size=512, nrg_th=0.1, ac_th
 		snr = 10 * np.log10(sig_pwr/noise_pwr)
 
 	conf = 1-abs(noise_cnt-sig_cnt)/(sig_cnt + noise_cnt)
-	return snr, conf
+	if conf > 0.7 and snr < snr_th:
+		return snr, conf, True
+	return snr, conf, False
