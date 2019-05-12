@@ -60,7 +60,11 @@ def lowSNR_detector(audio:list, frame_size=1024, hop_size=512, nrg_th=0.1, ac_th
 		noise_pwr /= noise_cnt
 		snr = 10 * np.log10(sig_pwr/noise_pwr)
 
-	conf = 1-abs(noise_cnt-sig_cnt)/(sig_cnt + noise_cnt)
-	if conf > 0.7 and snr < snr_th:
-		return snr, conf, True
-	return snr, conf, False
+	#conf = 1-abs(noise_cnt-sig_cnt)/(sig_cnt + noise_cnt)
+	#if conf > 0.7 and snr < snr_th:
+	#	return snr, conf, True
+	#return snr, conf, False
+
+	return snr, snr < snr_th
+
+	
