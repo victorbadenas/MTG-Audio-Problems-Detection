@@ -91,7 +91,7 @@ def compute_mean_fc(hist:list, fc_index_arr:list, f:list, SR:float):
 	mean_fc = f[most_likely_bin]
 	#print("len(f):",len(f))
 	#print("most_likely_bin:",most_likely_bin)
-	std_bin = int( min(np.std(fc_index_arr), len(f)/12) )
+	#std_bin = int( min(np.std(fc_index_arr), len(f)/12) )
 	#std = std_bin/len(f)*(SR/2)
 	#print("std_bin:",std_bin)
 	#conf = hist * abs(np.arange(len(hist)) - most_likely_bin) / ( max(abs(np.arange(len(hist)) - most_likely_bin)) * sum(hist))
