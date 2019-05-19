@@ -4,14 +4,15 @@ import json
 import argparse
 import gc
 import numpy as np
-import essentia.standard as estd
-from algos.satDetection import *
-from algos.noiseDetection import *
-from algos.clickDetection import *
+from essentia.standard import AudioLoader
+from algos.satDetection import ess_saturation_detector
+from algos.noiseDetection import ess_hum_detector, ess_noiseburst_detector
+from algos.clickDetection import ess_click_detector
 from algos.startstopDetection import ess_startstop_detector
 from algos.phaseDetection import falsestereo_detector, outofphase_detector
 from algos.bitdepthDetection import bit_depth_detector
 from algos.bwdetection import detectBW
+from algos.LowSNR import lowSNR_detector
 
 def single_json_compute(audiopath, jsonfolder, print_flag=False):
     """Calls the audio_problems_detection algorithms and stores the result in a json file
@@ -33,7 +34,7 @@ def single_json_compute(audiopath, jsonfolder, print_flag=False):
     #print("Essentia Modules installed:")
     #print(dir(estd))
 
-    audio, sr, channels, _, br, codec = estd.AudioLoader(filename = audiopath)()
+    audio, sr, channels, _, br, _ = AudioLoader(filename=audiopath)()
 
     monoaudio = np.sum(audio, axis=1)/2
 
@@ -42,12 +43,11 @@ def single_json_compute(audiopath, jsonfolder, print_flag=False):
     hop_size = int(frame_size/2)
     bit_depth_container = int(br / sr / channels)
 
-    filename = os.path.basename(audiopath)
-    filename, _ = os.path.splitext(filename)
+    filename = os.path.splitext(os.path.basename(audiopath))[0]
     
-    print(audiopath)
+    #print(audiopath)
     sat_starts, sat_ends, sat_perc = ess_saturation_detector(monoaudio, frame_size=frame_size, hop_size=hop_size)
-    hum_perc                       = ess_hum_detector(monoaudio, frame_size=frame_size, hop_size=hop_size)
+    hum_perc                       = ess_hum_detector(monoaudio, sr=sr)
     clk_starts, clk_ends, clk_perc = ess_click_detector(monoaudio, frame_size=frame_size, hop_size=hop_size)
     nb_indexes, nb_perc            = ess_noiseburst_detector(monoaudio, frame_size=frame_size, hop_size=hop_size)
     sil_perc                       = ess_startstop_detector(monoaudio, frame_size=frame_size, hop_size=hop_size) if len(monoaudio) > 1465 else "Audio file too short"
@@ -55,10 +55,11 @@ def single_json_compute(audiopath, jsonfolder, print_flag=False):
     oop_bool, oop_perc             = outofphase_detector(audio, frame_size=frame_size, hop_size=hop_size)
     extr_b, b_bool                 = bit_depth_detector(audio, bit_depth_container)
     bw_fc, bw_conf, bw_bool        = detectBW(monoaudio, sr, frame_size=frame_size, hop_size=hop_size)
+    snr, snr_bool                  = lowSNR_detector(audio, frame_size=frame_size, hop_size=hop_size, nrg_th=0.1, ac_th=0.6, snr_th=10)
     
     audio = None; monoaudio = None
-    gc.collect()
-    
+    #gc.collect()
+
     if print_flag:
         print("{0} data: \n \tfilename params: \n \tSample Rate:{1}Hz \n \tNumber of channels:{2} \n \tBit Rate:{3} \n \tCodec:{4}".format(filename,sr, channels, br, codec))
         print("\n \tLength of the audio file: {0} \n \tFrame Size: {1} \n \tHop Size: {2}".format(len(audio), frame_size, hop_size))
@@ -71,6 +72,7 @@ def single_json_compute(audiopath, jsonfolder, print_flag=False):
         print("NoiseBursts: \n \tIndexes length:{0} \n \tPercentage of problematic frames: {1}%".format(len(nb_indexes),nb_perc))
         print("BitDepth: \n \tExtracted_b:{0} \n \tProblem in file: {1}".format(extr_b, b_bool))
         print("Bandwidth: \n \tExtracted_cut_frequency: {0} \n \tConfidence: {1} \n \tProblem in file: {2}%".format(bw_fc, bw_conf, bw_bool))
+        print("lowSNR: \n \tExtracted_snr: {0} \n \tProblem in file: {1}%".format(snr, snr_bool))
         print("________________________________________________________________________________________________________________________________________-")
     
     json_dict = {
@@ -82,7 +84,8 @@ def single_json_compute(audiopath, jsonfolder, print_flag=False):
         "OutofPhase" : {"Bool" : oop_bool, "Percentage" : oop_perc},
         "NoiseBursts" : {"Indexes" : len(nb_indexes), "Percentage" : nb_perc},
         "BitDepth" : { "Extracted_bits" : extr_b, "Bool" : str(b_bool)},
-        "Bandwidth" : { "Extracted_freq" : bw_fc, "Confidence" : bw_conf, "Bool" : str(bw_bool)}
+        "Bandwidth" : { "Extracted_freq" : bw_fc, "Confidence" : bw_conf, "Bool" : str(bw_bool)},
+        "lowSNR" : { "SNR" : snr, "Bool" : str(snr_bool)}
     }
 
     jsonpath = os.path.join(jsonfolder,filename + ".json")
@@ -90,7 +93,6 @@ def single_json_compute(audiopath, jsonfolder, print_flag=False):
         json.dump(json_dict, jsonfile)
     
     return json_dict
-
 
 if __name__ == "__main__": 
     parser = argparse.ArgumentParser(description="Calls the audio_problems_detection algorithms and stores the result in a json file")

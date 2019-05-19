@@ -1,7 +1,7 @@
 import essentia.standard as estd
+import numpy as np
 
-
-def ess_hum_detector(x: list, Q0=.1, Q1=.55, frame_size=1024, hop_size=512, detectionThreshold=1):
+def ess_hum_detector(x: list, Q0=.1, Q1=.55, frame_size=1024, hop_size=512, detectionThreshold=1, sr=44100):
     """Computes the hum detection in x and computes a value over one of the path of the audio that has hum noise.
     
     Args:
@@ -13,7 +13,29 @@ def ess_hum_detector(x: list, Q0=.1, Q1=.55, frame_size=1024, hop_size=512, dete
     Returns:
         Percentage of the file whith hum noise
     """
-    _, _, _, starts, ends = estd.HumDetector(Q0=.1, Q1=.55, frameSize=frame_size, hopSize=hop_size, detectionThreshold=detectionThreshold)(x)
+    minLength = 10*sr
+    #print(len(x), minLength)
+    if len(x) < minLength:
+        x = np.tile(x,int(np.ceil(minLength/len(x))))
+    #print(len(x))
+    frame_size = frame_size / sr
+    hop_size = hop_size / sr
+    minimumDuration=frame_size / 4
+    timeWindow = frame_size
+    #print(minimumDuration, frame_size)
+    _, _, _, starts, ends = estd.HumDetector(Q0=Q0, Q1=Q1, frameSize=frame_size, hopSize=hop_size, detectionThreshold=detectionThreshold, sampleRate=sr, minimumDuration=minimumDuration, timeWindow=timeWindow)(x)
+    
+    """
+    try:
+        if frame_size + hop_size == '':
+            _, _, _, starts, ends = estd.HumDetector(Q0=Q0, Q1=Q1, detectionThreshold=detectionThreshold, sampleRate=sr, minimumDuration=0.1*len(x))(x)
+        else:
+            frame_size = frame_size / sr
+            hop_size = hop_size / sr
+            _, _, _, starts, ends = estd.HumDetector(Q0=Q0, Q1=Q1, frameSize=frame_size, hopSize=hop_size, detectionThreshold=detectionThreshold, sampleRate=sr, minimumDuration=0.1*len(x))(x)
+    except(RuntimeError):
+        return "error"
+    """
     #print(starts,ends)
 
     dur = []
