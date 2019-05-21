@@ -3,15 +3,17 @@ import matplotlib.pyplot as plt
 eps = np.finfo("float").eps
 
 
-class LowSnrDetector():
-	def __init__(self, frameSize=1024, hopSize=512, nrgThreshold=0.1, acThreshold=0.6, snrThreshold=5, confThreshold=0.5, mode="average"):
+class LowSnrDetector:
+	def __init__(self, frameSize=1024, hopSize=512, nrgThreshold=0.1, acThreshold=0.6, snrThreshold=5, mode="average"):
 		self.frameSize = frameSize
 		self.hopSize = hopSize
 		self.nrgThreshold = nrgThreshold
 		self.acThreshold = acThreshold
 		self.snrThreshold = snrThreshold
-		self.confThreshold = confThreshold
-		self.mode = mode
+		if mode in ["average", "accumulative"]:
+			self.mode = mode
+		else:
+			raise ValueError("mode must be either accumulative or average")
 		self._reset_()
 
 	def __call__(self, audio):
@@ -22,7 +24,7 @@ class LowSnrDetector():
 		self._normalise_()
 		self._classifier_()
 		self._compute_()
-		return self.snr, self.conf, self.conf >= self.confThreshold and self.snr < self.snrThreshold
+		return self.snr, self.snr < self.snrThreshold
 
 	def _reset_(self):
 		self.audio = None
@@ -87,8 +89,6 @@ class LowSnrDetector():
 			if self.mode == "average":
 				self.sigPwr /= self.sigCnt
 				self.noisePwr /= self.noiseCnt
-			elif self.mode != "accumulative":
-				raise ValueError("mode must be accumulative or average")
 			self.snr = 10 * np.log10(self.sigPwr/self.noisePwr)
 
 		self.conf = 1-abs(self.noiseCnt-self.sigCnt)/(self.sigCnt + self.noiseCnt)
