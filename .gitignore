@@ -111,3 +111,6 @@ Dataset/
 
 # Docker
 Dockerfile
+
+#Pycharm
+.idea/
