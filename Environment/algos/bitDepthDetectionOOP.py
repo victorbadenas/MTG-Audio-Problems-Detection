@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+
 class BitDepthDetector:
     def __init__(self, bitDepth, chunkLen, numberOfChunks):
         if bitDepth in [8, 16, 24, 32]:

@@ -1,39 +1,39 @@
-import os
-import sys
 import numpy as np
 import essentia.standard as estd
 import scipy.signal
 from scipy.interpolate import interp1d
-from essentia import array as esarr
 eps = np.finfo("float").eps
 
-def detectBW(audio:list, SR:float, frame_size = 256, hop_size = 128, floor_db = -90, oversample_f = 1):
+
+def detectBW(audio: list, SR: float, frame_size=256, hop_size=128, floor_db=-90, oversample_f=1):
 	
-	frame_size *= oversample_f #if an oversample factor is desired, apply it
+	frame_size *= oversample_f  # if an oversample factor is desired, apply it
 
 	fc_index_arr = []
-	fft = estd.FFT(size = frame_size) #declare FFT function
-	window = estd.Windowing(size=frame_size, type="hann") #declare windowing function
+	fft = estd.FFT(size=frame_size)  # declare FFT function
+	window = estd.Windowing(size=frame_size, type="hann")  # declare windowing function
 
 	for frame in estd.FrameGenerator(audio, frameSize=frame_size, hopSize=hop_size, startFromZero=True):
 		
 		frame_fft = abs(fft(window(frame)))
-		frame_fft_db = 20 * np.log10(frame_fft + eps) #calculate frame fft values in db
+		frame_fft_db = 20 * np.log10(frame_fft + eps)  # calculate frame fft values in db
 		
-		interp_frame = compute_spectral_envelope(frame_fft_db, "linear") #compute the linear interpolation between the values of the maxima of the spectrum
+		interp_frame = compute_spectral_envelope(frame_fft_db, "linear")  # compute the linear interpolation between the values of the maxima of the spectrum
 		interp_frame = modify_floor(interp_frame, floor_db, log=True)
 
 		fc_index = compute_fc(interp_frame)
 
 		if energy_verification(frame_fft, fc_index): fc_index_arr.append(fc_index)
 
-	if len(fc_index_arr) == 0: fc_index_arr = [frame_size]
+	if len(fc_index_arr) == 0:
+		fc_index_arr = [frame_size]
 	
 	fc_bin, conf, binary = compute_mean_fc(fc_index_arr, np.arange(len(frame_fft)), SR)
 
-	#print("mean_fc: ", fc_bin*SR/frame_size ," conf: ", conf ," binary_result: ", binary)
+	# print("mean_fc: ", fc_bin*SR/frame_size ," conf: ", conf ," binary_result: ", binary)
 
 	return fc_bin*SR/frame_size, conf, binary
+
 
 def is_power2(num:int):
 	"""States if a number is a positive power of two
@@ -45,6 +45,7 @@ def is_power2(num:int):
 		(bool) True if is power of 2 false otherwise
 	"""
 	return num != 0 and ((num & (num - 1)) == 0)
+
 
 def compute_spectral_envelope(frame_fft:list, kind="linear"):
 	"""Compute the spectral envelope through a peak interpolation method
@@ -71,6 +72,7 @@ def compute_spectral_envelope(frame_fft:list, kind="linear"):
 	hp = np.append(hp,frame_fft[-1]) ; hp = np.append(frame_fft[0],hp) #appending the first and last value of the function
 	return interp1d(xp,hp,kind=kind)(xticks) #interpolating and returning
 
+
 def get_peaks(sig:list, xticks:list):
 	"""Returns the x,y values of the peaks in sig
 
@@ -96,6 +98,7 @@ def get_peaks(sig:list, xticks:list):
 
 	return xval, yval
 
+
 def modify_floor(sig:list, floor_db:float, log=False):
 	"""Sets the values lower than a relative threshold to the threshold
 
@@ -114,6 +117,7 @@ def modify_floor(sig:list, floor_db:float, log=False):
 		sig[sig < (max(sig) * floor)] = max(sig) * floor
 		return sig
 
+
 def compute_fc(interp_frame:list):
 	"""Computes the biggest bin where the derivative goes below a threshold
 
@@ -126,6 +130,7 @@ def compute_fc(interp_frame:list):
 	d = np.diff(interp_frame)[:-2]
 	d = np.append(d,np.zeros(3))	
 	return get_last_true_index(d <= (min(d) + 2))
+
 
 def get_last_true_index(bool_list:list):
 	"""Given a bool vector, returns the position of the last True value in the array
@@ -141,6 +146,7 @@ def get_last_true_index(bool_list:list):
 	for i,item in enumerate(reversed(bool_list)):
 		if item: return len(bool_list)-1-i
 
+
 def energy_verification(frame_fft:list, fc_index:int):
 	"""Veryfies that the frame has at least 70% of the eneregy of the frame below fc_index
 
@@ -152,6 +158,7 @@ def energy_verification(frame_fft:list, fc_index:int):
 		(boolean) True if the energy from 0 to fc_index is greater than the 70% of the energy of the frame
 	"""
 	return sum(frame_fft[:fc_index]**2)/sum(frame_fft**2) > 0.7
+
 
 def compute_mean_fc(fc_index_arr:list, xticks:list, SR:float):
 	"""computes the most possible fc for that audio file
@@ -193,6 +200,7 @@ def compute_mean_fc(fc_index_arr:list, xticks:list, SR:float):
 		conf /= sum(hist**2)
 		#plt.show()
 		return most_likely_bin, conf, False
+
 
 def compute_histogram(idx_arr:list, xticks:list, mask = []):
 	"""Computes the histogram of an array of ints
