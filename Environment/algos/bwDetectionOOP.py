@@ -54,7 +54,7 @@ class BwDetection:
         self.avgFrames /= (i+1)
         self.mostLikelyBin, conf, binary = self.__computeMeanFc(fcIndexArr, np.arange(int(self.frameSize/2)+2), hist=self.hist)
 
-        return self.mostLikelyBin*SR/self.frameSize, conf, str(binary)
+        return self.mostLikelyBin*SR/self.frameSize, conf, binary
         # print("f={:0=2f}, conf={:0=2f}, problem={}".format(
         #     self.mostLikelyBin*SR / self.frameSize, conf, str(binary)))
 
@@ -97,6 +97,7 @@ class BwDetection:
             #if it falls over the 85% mark, the confidence is computated by summing the square of the 3 samples of the histogram closer to the max
             #and compare it to the sum of all the values appended to the histogram.
             conf = sum(hist[int(.85*len(hist)):]) / sum(hist)
+            # print(conf)
             return mostLikelyBin, conf, False
 
     def __computeHistogram(self, idxArr, xticks, mask=[]):
@@ -131,8 +132,6 @@ class BwDetection:
         return num != 0 and ((num & (num - 1)) == 0)
 
     def plot(self, **kwargs):
-        if self.avgFrames or self.hist or self.mostLikelyBin:
-            raise ValueError("Run the algorithm before plotting")
 
         fig, ax = plt.subplots(2, 1, **kwargs)
         ax[0].plot(20 * np.log10(self.avgFrames + eps))

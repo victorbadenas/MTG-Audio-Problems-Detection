@@ -112,5 +112,8 @@ Dataset/
 # Docker
 Dockerfile
 
-#Pycharm
+# Pycharm
 .idea/
+
+# VSCode
+.vscode

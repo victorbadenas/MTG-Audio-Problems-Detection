@@ -3,14 +3,14 @@ import json
 import argparse
 import numpy as np
 from essentia.standard import AudioLoader
-# from algos.satDetection import ess_saturation_detector
-# from algos.noiseDetection import ess_hum_detector, ess_noiseburst_detector
-# from algos.clickDetection import ess_click_detector
-# from algos.startstopDetection import ess_startstop_detector
-# from algos.phaseDetection import falsestereo_detector, outofphase_detector
-# from algos.bitdepthDetection import bit_depth_detector
-# from algos.bwdetection import detectBW
-# from algos.LowSNR import lowSNR_detector
+from algos.satDetection import ess_saturation_detector
+from algos.noiseDetection import ess_hum_detector, ess_noiseburst_detector
+from algos.clickDetection import ess_click_detector
+from algos.startstopDetection import ess_startstop_detector
+from algos.phaseDetection import falsestereo_detector, outofphase_detector
+from algos.bitdepthDetection import bit_depth_detector
+from algos.bwdetection import detectBW
+from algos.LowSNR import lowSNR_detector
 
 from algos.LowSnrOOP import LowSnrDetector
 from algos.bitDepthDetectionOOP import BitDepthDetector
@@ -28,8 +28,9 @@ def single_json_compute(audiopath, jsonFolder, print_flag=False):
     Returns:
         json_dict: (dict) dictionary with the audio's features
     """
-
-    if not os.path.exists(audiopath): raise ValueError("Audio File does not exist")
+    # print(audiopath)
+    if not os.path.exists(audiopath): 
+        raise ValueError("Audio File does not exist")
     if not os.path.exists(jsonFolder):
         print(jsonFolder + " does not exist, defaulting to audiofolder: " + os.path.dirname(args.audiopath))
         jsonFolder = os.path.dirname(args.audiopath)
@@ -53,20 +54,17 @@ def single_json_compute(audiopath, jsonFolder, print_flag=False):
     Snr = LowSnrDetector(frameSize=frameSize, hopSize=hopSize)
     Bit = BitDepthDetector(bitDepth=bitDepthContainer, chunkLen=100, numberOfChunks=100)
     BandWidth = BwDetection()
-    # print(audiopath)
-    # sat_starts, sat_ends, sat_perc = ess_saturation_detector(monoaudio, frame_size=frameSize, hop_size=hopSize)
-    # hum_perc = ess_hum_detector(monoaudio, sr=sr)
-    # clk_starts, clk_ends, clk_perc = ess_click_detector(monoaudio, frame_size=frameSize, hop_size=hopSize)
-    # nb_indexes, nb_perc = ess_noiseburst_detector(monoaudio, frame_size=frameSize, hop_size=hopSize)
-    # if len(monoaudio) > 1465:
-    #     sil_perc = ess_startstop_detector(monoaudio, frame_size=frameSize, hop_size=hopSize)
-    # else:
-    #     sil_perc = "Audio file too short"
-    # fs_bool, fs_perc = falsestereo_detector(audio, frame_size=frameSize, hop_size=hopSize)
-    # oop_bool, oop_perc = outofphase_detector(audio, frame_size=frameSize, hop_size=hopSize)
-    # extr_b, b_bool = bit_depth_detector(audio, bit_depth_container)
-    # bw_fc, bw_conf, bw_bool = detectBW(monoaudio, sr, frame_size=frameSize, hop_size=hopSize)
-    # snr, snr_bool = lowSNR_detector(audio, frame_size=frameSize, hop_size=hopSize, nrg_th=0.1, ac_th=0.6, snr_th=10)
+    
+    sat_starts, sat_ends, sat_perc = ess_saturation_detector(monoaudio, frame_size=frameSize, hop_size=hopSize)
+    hum_perc = ess_hum_detector(monoaudio, sr=sr)
+    clk_starts, clk_ends, clk_perc = ess_click_detector(monoaudio, frame_size=frameSize, hop_size=hopSize)
+    nb_indexes, nb_perc = ess_noiseburst_detector(monoaudio, frame_size=frameSize, hop_size=hopSize)
+    if len(monoaudio) > 1465:
+        sil_perc = ess_startstop_detector(monoaudio, frame_size=frameSize, hop_size=hopSize)
+    else:
+        sil_perc = "Audio file too short"
+    fs_bool, fs_perc = falsestereo_detector(audio, frame_size=frameSize, hop_size=hopSize)
+    oop_bool, oop_perc = outofphase_detector(audio, frame_size=frameSize, hop_size=hopSize)
 
     snr, snr_bool = Snr(audio)
     extr_b, b_bool = Bit(audio)
@@ -88,23 +86,20 @@ def single_json_compute(audiopath, jsonFolder, print_flag=False):
         print("________________________________________________________________________________________________________________________________________-")
 
     json_dict = {
-        "BitDepth": { "BitDepth": str(bw_bool).lower()},
-        "Bandwidth": { "Bandwidth": str(b_bool).lower()},
-        "lowSNR": { "lowSNR": str(snr_bool).lower()}
+        "Saturation": {"Start indexes": len(sat_starts), "End indexes": len(sat_ends), "Percentage": sat_perc},
+        "Hum": {"Percentage": hum_perc},
+        "Clicks": {"Start indexes": len(clk_starts), "End indexes": len(clk_ends), "Percentage": clk_perc},
+        "Silence": {"Percentage": sil_perc},
+        "FalseStereo": {"Bool": fs_bool, "Percentage": fs_perc},
+        "OutofPhase": {"Bool": oop_bool, "Percentage": oop_perc},
+        "NoiseBursts": {"Indexes": len(nb_indexes), "Percentage": nb_perc},
+        "BitDepth": { "BitDepth": str(b_bool)},
+        "Bandwidth": { "Bandwidth": str(bw_bool)},
+        "lowSNR": { "lowSNR": str(snr_bool)}
+        # "BitDepth": { "BitDepth": str(b_bool), "extracted": extr_b},
+        # "Bandwidth": { "Bandwidth": str(bw_bool), "cutfrequency": bw_fc, "confidence": bw_conf},
+        # "lowSNR": { "lowSNR": str(snr_bool), "SNR": snr}
     }
-    """
-    json_dict = {
-        # "Saturation": {"Start indexes": len(sat_starts), "End indexes": len(sat_ends), "Percentage": sat_perc},
-        # "Hum": {"Percentage": hum_perc},
-        # "Clicks": {"Start indexes": len(clk_starts), "End indexes": len(clk_ends), "Percentage": clk_perc},
-        # "Silence": {"Percentage": sil_perc},
-        # "FalseStereo": {"Bool": fs_bool, "Percentage": fs_perc},
-        # "OutofPhase": {"Bool": oop_bool, "Percentage": oop_perc},
-        # "NoiseBursts": {"Indexes": len(nb_indexes), "Percentage": nb_perc},
-        "BitDepth": {"Extracted_bits": extr_b, "Bool": str(b_bool)},
-        "Bandwidth": {"Extracted_freq": bw_fc, "Confidence": bw_conf, "Bool": str(bw_bool)},
-        "lowSNR": {"SNR": snr, "Bool": str(snr_bool)}
-    }"""
 
     jsonpath = os.path.join(jsonFolder, filename + ".json")
     with open(jsonpath, "w") as jsonfile:
