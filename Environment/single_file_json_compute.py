@@ -83,9 +83,9 @@ def single_json_compute(audiopath, jsonFolder, print_flag=False):
         print("BitDepth: \n \tExtracted_b:{0} \n \tProblem in file: {1}".format(extr_b, b_bool))
         print("Bandwidth: \n \tExtracted_cut_frequency: {0} \n \tConfidence: {1} \n \tProblem in file: {2}%".format(bw_fc, bw_conf, bw_bool))
         print("lowSNR: \n \tExtracted_snr: {0} \n \tProblem in file: {1}%".format(snr, snr_bool))
-        print("________________________________________________________________________________________________________________________________________-")
+        print("________________________________________________________________________________________________________________________________________")
 
-    json_dict = {
+    info = {
         "Saturation": {"Start indexes": len(sat_starts), "End indexes": len(sat_ends), "Percentage": sat_perc},
         "Hum": {"Percentage": hum_perc},
         "Clicks": {"Start indexes": len(clk_starts), "End indexes": len(clk_ends), "Percentage": clk_perc},
@@ -93,19 +93,27 @@ def single_json_compute(audiopath, jsonFolder, print_flag=False):
         "FalseStereo": {"Bool": fs_bool, "Percentage": fs_perc},
         "OutofPhase": {"Bool": oop_bool, "Percentage": oop_perc},
         "NoiseBursts": {"Indexes": len(nb_indexes), "Percentage": nb_perc},
-        "BitDepth": { "BitDepth": str(b_bool)},
-        "Bandwidth": { "Bandwidth": str(bw_bool)},
-        "lowSNR": { "lowSNR": str(snr_bool)}
-        # "BitDepth": { "BitDepth": str(b_bool), "extracted": extr_b},
-        # "Bandwidth": { "Bandwidth": str(bw_bool), "cutfrequency": bw_fc, "confidence": bw_conf},
-        # "lowSNR": { "lowSNR": str(snr_bool), "SNR": snr}
+        "BitDepth": { "Bool": b_bool},
+        "Bandwidth": { "Bool": bw_bool},
+        "lowSNR": { "Bool": snr_bool}
+        # "BitDepth": { "BitDepth": b_bool, "extracted": extr_b},
+        # "Bandwidth": { "Bandwidth": bw_bool, "cutfrequency": bw_fc, "confidence": bw_conf},
+        # "lowSNR": { "lowSNR": snr_bool, "SNR": snr}
     }
 
     jsonpath = os.path.join(jsonFolder, filename + ".json")
     with open(jsonpath, "w") as jsonfile:
+
+        json_dict = info.copy()
+        for problem in json_dict:
+            if isinstance(json_dict[problem],dict):
+                for feature in json_dict[problem]:
+                    if feature == "Bool":
+                        json_dict[problem]["Bool"] = str(json_dict[problem]["Bool"])
+
         json.dump(json_dict, jsonfile)
     
-    return json_dict
+    return info
 
 
 if __name__ == "__main__": 
