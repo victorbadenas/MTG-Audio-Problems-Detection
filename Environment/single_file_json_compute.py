@@ -3,12 +3,12 @@ import json
 import argparse
 import numpy as np
 from essentia.standard import AudioLoader
-from algos.satDetection import ess_saturation_detector
-from algos.noiseDetection import ess_hum_detector, ess_noiseburst_detector
-from algos.clickDetection import ess_click_detector
-from algos.startstopDetection import ess_startstop_detector
-# tfrom algos.phaseDetection import falsestereo_detector, outofphase_detector
-from algos.essPhaseDetection import falsestereo_detector, outofphase_detector
+from algos.satDetection import essSaturationDetector
+from algos.noiseDetection import essHumDetector, essNoiseburstDetector
+from algos.clickDetection import essClickDetector
+from algos.startstopDetection import essStartstopDetector
+# from algos.phaseDetection import falsestereo_detector, outofphase_detector
+from algos.essPhaseDetection import essFalsestereoDetector, outofPhaseDetector
 from algos.LowSnrOOP import LowSnrDetector
 from algos.bitDepthDetectionOOP import BitDepthDetector
 from algos.bwDetectionOOP import BwDetection
@@ -52,16 +52,16 @@ def single_json_compute(audioPath, jsonFolder, printFlag=False):
     bit = BitDepthDetector(bitDepth=bitDepthContainer, chunkLen=100, numberOfChunks=100)
     bandWidth = BwDetection()
     
-    satStarts, satEnds, satPercentage = ess_saturation_detector(monoAudio, frame_size=frameSize, hop_size=hopSize)
-    humPercentage = ess_hum_detector(monoAudio, sr=sr)
-    clkStarts, clkEnds, clkPercentage = ess_click_detector(monoAudio, frame_size=frameSize, hop_size=hopSize)
-    nbIndexes, nbPercentage = ess_noiseburst_detector(monoAudio, frame_size=frameSize, hop_size=hopSize)
+    satStarts, satEnds, satPercentage = essSaturationDetector(monoAudio, frameSize=frameSize, hopSize=hopSize)
+    humPercentage = essHumDetector(monoAudio, sr=sr)
+    clkStarts, clkEnds, clkPercentage = essClickDetector(monoAudio, frameSize=frameSize, hopSize=hopSize)
+    nbIndexes, nbPercentage = essNoiseburstDetector(monoAudio, frameSize=frameSize, hopSize=hopSize)
     if len(monoAudio) > 1465:
-        silPercentage = ess_startstop_detector(monoAudio, frame_size=frameSize, hop_size=hopSize)
+        silPercentage = essStartstopDetector(monoAudio, frameSize=frameSize, hopSize=hopSize)
     else:
         silPercentage = "Audio file too short"
-    fsBool, fsPercentage = falsestereo_detector(audio, frame_size=frameSize, hop_size=hopSize)
-    oopBool, oopPercentage = outofphase_detector(audio, frame_size=frameSize, hop_size=hopSize)
+    fsBool, fsPercentage = essFalsestereoDetector(audio, frameSize=frameSize, hopSize=hopSize)
+    oopBool, oopPercentage = outofPhaseDetector(audio, frameSize=frameSize, hopSize=hopSize)
 
     snr, snrBool = snr(audio)
     extrBitDepth, bitDepthBool = bit(audio)
@@ -111,7 +111,7 @@ def single_json_compute(audioPath, jsonFolder, printFlag=False):
 
         json_dict = info.copy()
         for problem in json_dict:
-            if isinstance(json_dict[problem],dict):
+            if isinstance(json_dict[problem], dict):
                 for feature in json_dict[problem]:
                     if feature == "Bool":
                         json_dict[problem]["Bool"] = str(json_dict[problem]["Bool"])

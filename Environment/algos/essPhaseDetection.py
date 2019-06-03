@@ -1,11 +1,14 @@
 from essentia.standard import FalseStereoDetector, StereoDemuxer, FrameGenerator, StereoMuxer
 
 
-def falsestereo_detector(x: list, frame_size=1024, hop_size=512, correlationthreshold=0.98):
+def essFalsestereoDetector(x: list, frameSize=1024, hopSize=512, correlationthreshold=0.98):
     """Computes the correlation and consideres if the information in the two channels is the same
     
     Args:
         x: (list) input signal
+        frameSize: (int) frame size for the analysis in falseStereoDetector
+        hopSize: (int) hop_size for the analysis in falseStereoDetector
+        correlationthreshold: (float) lower limit to decide if a file has correlation problems
 
     Returns:
         final_bool: (bool) True if the information is the same in both channels, False otherwise
@@ -13,8 +16,8 @@ def falsestereo_detector(x: list, frame_size=1024, hop_size=512, correlationthre
     """
     rx, lx = StereoDemuxer()(x)
 
-    lfg = FrameGenerator(lx, frameSize=frame_size, hopSize=hop_size, startFromZero=True)
-    rfg = FrameGenerator(rx, frameSize=frame_size, hopSize=hop_size, startFromZero=True)
+    lfg = FrameGenerator(lx, frameSize=frameSize, hopSize=hopSize, startFromZero=True)
+    rfg = FrameGenerator(rx, frameSize=frameSize, hopSize=hopSize, startFromZero=True)
 
     mux = StereoMuxer()
 
@@ -36,11 +39,14 @@ def falsestereo_detector(x: list, frame_size=1024, hop_size=512, correlationthre
     return percentage > 90.0, round(percentage, 2)
 
 
-def outofphase_detector(x: list, frame_size=1024, hop_size=512, correlationthreshold=-0.8):
+def outofPhaseDetector(x: list, frameSize=1024, hopSize=512, correlationthreshold=-0.8):
     """Computes the correlation and flags the file if the file has a 90% of frames out of phase
     
     Args:
         x: (list) input signal
+        frameSize: (int) frame size for the analysis in falseStereoDetector
+        hopSize: (int) hop_size for the analysis in falseStereoDetector
+        correlationthreshold: (float) higher limit to decide if a file has correlation problems
 
     Returns:
         final_bool: (bool) True if the information is the same in both channels, False otherwise
@@ -48,8 +54,8 @@ def outofphase_detector(x: list, frame_size=1024, hop_size=512, correlationthres
     """
     rx, lx = StereoDemuxer()(x)
 
-    lfg = FrameGenerator(lx, frameSize=frame_size, hopSize=hop_size, startFromZero=True)
-    rfg = FrameGenerator(rx, frameSize=frame_size, hopSize=hop_size, startFromZero=True)
+    lfg = FrameGenerator(lx, frameSize=frameSize, hopSize=hopSize, startFromZero=True)
+    rfg = FrameGenerator(rx, frameSize=frameSize, hopSize=hopSize, startFromZero=True)
 
     mux = StereoMuxer()
 
