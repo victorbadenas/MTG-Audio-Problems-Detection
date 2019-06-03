@@ -1,4 +1,3 @@
-import essentia.standard as estd
 import numpy as np
 
 def pearson_calculation(frame:list):

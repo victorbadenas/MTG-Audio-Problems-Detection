@@ -1,7 +1,5 @@
 import essentia.standard as estd
 import numpy as np
-import argparse
-from scipy.special import entr
 from essentia import array as esarr
 eps = np.finfo("float").eps
 
