@@ -2,7 +2,8 @@ from essentia.standard import HumDetector, NoiseBurstDetector, FrameGenerator
 import numpy as np
 
 
-def essHumDetector(x: list, Q0=.1, Q1=.55, frameSize=1024, hopSize=512, detectionThreshold=1, sr=44100):
+def essHumDetector(x: list, Q0=.1, Q1=.55, frameSize=1024, hopSize=512, detectionThreshold=1,
+                   sr=44100, minLength=None, percentageThrehold=80):
     """Computes the hum detection in x and computes a value over one of the path of the audio that has hum noise.
     
     Args:
@@ -10,11 +11,14 @@ def essHumDetector(x: list, Q0=.1, Q1=.55, frameSize=1024, hopSize=512, detectio
         Q0: (float)
         Q1: (float) 
         detectionThreshold: (float)
+        sr: (float) in Hz
+        minLength: (int) in samples
 
     Returns:
         Percentage of the file whith hum noise
     """
-    minLength = 10*sr
+    if not minLength:
+        minLength = 10*sr
     # print(len(x), minLength)
     if len(x) < minLength:
         x = np.tile(x, int(np.ceil(minLength/len(x))))
@@ -33,13 +37,14 @@ def essHumDetector(x: list, Q0=.1, Q1=.55, frameSize=1024, hopSize=512, detectio
     dur = []
     for s, e in zip(starts, ends):
         dur.append(e-s)
-    
+
+    percentage = round(100*sum(dur)/len(x), 2)
     # len_x = len(x)
     # del starts; del ends; del _; del x
-    return round(100*sum(dur)/len(x), 2)
+    return percentage, percentage > percentageThrehold
 
 
-def essNoiseburstDetector(x: list, frameSize=1024, hopSize=512, detectionThreshold=0.005):
+def essNoiseburstDetector(x: list, frameSize=1024, hopSize=512, detectionThreshold=0.05, percentageThrehold=5):
     """Computes the hum detection in x and computes a value over one of the path of the audio that has hum noise.
     
     Args:
@@ -60,11 +65,12 @@ def essNoiseburstDetector(x: list, frameSize=1024, hopSize=512, detectionThresho
         corrupt_samples = noiseBurstDetector(frame)
         corrupt_samples = hopSize * i + corrupt_samples
 
-        if len(corrupt_samples) > int(0.05*frameSize):
+        if len(corrupt_samples) > int(detectionThreshold*frameSize):
             count += 1
             for s in corrupt_samples:
                 idxs.append(s)
         total += 1
-    
+
+    percentage = round(100*count/total, 2)
     # del noiseBurstDetector_algo; del frame; del corrupt_samples; del x;
-    return idxs, round(100*count/total, 2)
+    return idxs, percentage, percentage > percentageThrehold

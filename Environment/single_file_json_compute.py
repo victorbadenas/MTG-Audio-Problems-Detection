@@ -7,7 +7,6 @@ from algos.satDetection import essSaturationDetector
 from algos.noiseDetection import essHumDetector, essNoiseburstDetector
 from algos.clickDetection import essClickDetector
 from algos.startstopDetection import essStartstopDetector
-# from algos.phaseDetection import falsestereo_detector, outofphase_detector
 from algos.essPhaseDetection import essFalsestereoDetector, outofPhaseDetector
 from algos.LowSnrOOP import LowSnrDetector
 from algos.bitDepthDetectionOOP import BitDepthDetector
@@ -52,59 +51,57 @@ def single_json_compute(audioPath, jsonFolder, printFlag=False):
     bit = BitDepthDetector(bitDepth=bitDepthContainer, chunkLen=100, numberOfChunks=100)
     bandWidth = BwDetection()
     
-    satStarts, satEnds, satPercentage = essSaturationDetector(monoAudio, frameSize=frameSize, hopSize=hopSize)
-    humPercentage = essHumDetector(monoAudio, sr=sr)
-    clkStarts, clkEnds, clkPercentage = essClickDetector(monoAudio, frameSize=frameSize, hopSize=hopSize)
-    nbIndexes, nbPercentage = essNoiseburstDetector(monoAudio, frameSize=frameSize, hopSize=hopSize)
+    satStarts, satEnds, satPercentage, satBool = essSaturationDetector(monoAudio, frameSize=frameSize, hopSize=hopSize)
+    humPercentage, humBool = essHumDetector(monoAudio, sr=sr)
+    clkStarts, clkEnds, clkPercentage, clkBool = essClickDetector(monoAudio, frameSize=frameSize, hopSize=hopSize)
+    nbIndexes, nbPercentage, nbBool = essNoiseburstDetector(monoAudio, frameSize=frameSize, hopSize=hopSize)
     if len(monoAudio) > 1465:
-        silPercentage = essStartstopDetector(monoAudio, frameSize=frameSize, hopSize=hopSize)
+        silPercentage, silBool = essStartstopDetector(monoAudio, frameSize=frameSize, hopSize=hopSize)
     else:
-        silPercentage = "Audio file too short"
-    fsBool, fsPercentage = essFalsestereoDetector(audio, frameSize=frameSize, hopSize=hopSize)
-    oopBool, oopPercentage = outofPhaseDetector(audio, frameSize=frameSize, hopSize=hopSize)
+        silPercentage, silBool = "Audio file too short", False
+    fsPercentage, fsBool = essFalsestereoDetector(audio, frameSize=frameSize, hopSize=hopSize)
+    oopPercentage, oopBool = outofPhaseDetector(audio, frameSize=frameSize, hopSize=hopSize)
 
     snr, snrBool = snr(audio)
     extrBitDepth, bitDepthBool = bit(audio)
     bwCutFrequency, bwConfidence, bwBool = bandWidth(audio, sr)
 
+    info = {
+        "Saturation": {"Start indexes": len(satStarts), "End indexes": len(satEnds),
+                       "Percentage": satPercentage, "Bool": satBool},
+        "Hum": {"Percentage": humPercentage, "Bool": humBool},
+        "Clicks": {"Start indexes": len(clkStarts), "End indexes": len(clkEnds),
+                   "Percentage": clkPercentage, "Bool": clkBool},
+        "Silence": {"Percentage": silPercentage, "Bool": silBool},
+        "FalseStereo": {"Percentage": fsPercentage, "Bool": fsBool},
+        "OutofPhase": {"Percentage": oopPercentage, "Bool": oopBool},
+        "NoiseBursts": {"Indexes": len(nbIndexes), "Percentage": nbPercentage, "Bool": nbBool},
+        # "BitDepth": { "BitDepth": bitDepthBool, "extracted": extrBitDepth},
+        # "Bandwidth": { "Bandwidth": bwBool, "cutfrequency": bwCutFrequency, "confidence": bwConfidence},
+        # "lowSNR": { "lowSNR": snrBool, "SNR": snr}
+        # "Saturation": {"Bool": satBool},
+        # "Hum": {"Bool": humBool},
+        # "Clicks": {"Bool": clkBool},
+        # "Silence": {"Bool": silBool},
+        # "FalseStereo": {"Bool": fsBool},
+        # "OutofPhase": {"Bool": oopBool},
+        # "NoiseBursts": {"Bool": silBool},
+        "BitDepth": {"Bool": bitDepthBool},
+        "Bandwidth": {"Bool": bwBool},
+        "lowSNR": {"Bool": snrBool}
+    }
+
     if printFlag:
         print("{0} data: \n \tfilename params: \n \tSample Rate:{1}Hz \n \tNumber of channels:{2} \
               \n \tBit Rate:{3}".format(filename, sr, channels, br))
         print("\n \tLength of the audio file: {0} \n \tFrame Size: {1} \n \tHop Size: {2}".format(
-            len(audio), frameSize, hopSize))
-        print("Saturation: \n \tStarts length: {0} \n \tEnds length: {1} \n \tPercentage of clipped frames: {2}%".format(
-            len(satStarts), len(satEnds), satPercentage))
-        print("Hum: \n \tPercentage of the file with Hum: {}%".format(humPercentage))
-        print("Clicks: \n \tStarts length: {0} \n \tEnds length: {1} \n \tPercentage of clipped frames: {2}%".format(len(
-            clkStarts), len(clkEnds), clkPercentage))
-        print("Silence: \n \tPercentage of the file that is silence: {}%".format(silPercentage))
-        print("FalseStereo: \n \tIs falseStereo?: {0} \n \tPercentage of frames with correlation==1: {1}%".format(
-            fsBool, fsPercentage))
-        print("OutofPhase: \n \tIs outofphase?: {0} \n \tPercentage of frames with correlation<-0.8: {1}%".format(
-            oopBool, oopPercentage))
-        print("NoiseBursts: \n \tIndexes length:{0} \n \tPercentage of problematic frames: {1}%".format(
-            len(nbIndexes), nbPercentage))
-        print("BitDepth: \n \tExtracted_b:{0} \n \tProblem in file: {1}".format(extrBitDepth, bitDepthBool))
-        print("Bandwidth: \n \tExtracted_cut_frequency: {0} \n \tConfidence: {1} \n \tProblem in file: {2}%".format(
-            bwCutFrequency, bwConfidence, bwBool))
-        print("lowSNR: \n \tExtracted_snr: {0} \n \tProblem in file: {1}%".format(snr, snrBool))
-        print("_______________________________________________________________________________________________________")
+            len(monoAudio), frameSize, hopSize))
 
-    info = {
-        "Saturation": {"Start indexes": len(satStarts), "End indexes": len(satEnds), "Percentage": satPercentage},
-        "Hum": {"Percentage": humPercentage},
-        "Clicks": {"Start indexes": len(clkStarts), "End indexes": len(clkEnds), "Percentage": clkPercentage},
-        "Silence": {"Percentage": silPercentage},
-        "FalseStereo": {"Bool": fsBool, "Percentage": fsPercentage},
-        "OutofPhase": {"Bool": oopBool, "Percentage": oopPercentage},
-        "NoiseBursts": {"Indexes": len(nbIndexes), "Percentage": nbPercentage},
-        "BitDepth": {"Bool": bitDepthBool},
-        "Bandwidth": {"Bool": bwBool},
-        "lowSNR": {"Bool": snrBool}
-        # "BitDepth": { "BitDepth": bitDepthBool, "extracted": extrBitDepth},
-        # "Bandwidth": { "Bandwidth": bwBool, "cutfrequency": bwCutFrequency, "confidence": bwConfidence},
-        # "lowSNR": { "lowSNR": snrBool, "SNR": snr}
-    }
+        for problem in info:
+            string = "{}: \n".format(problem)
+            for feature in info[problem]:
+                string = "{}\t{}: {} \n".format(string, feature, info[problem][feature])
+            print(string)
 
     jsonpath = os.path.join(jsonFolder, filename + ".json")
     with open(jsonpath, "w") as jsonfile:

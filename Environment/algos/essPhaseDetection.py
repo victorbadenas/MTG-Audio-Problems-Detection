@@ -1,7 +1,7 @@
 from essentia.standard import FalseStereoDetector, StereoDemuxer, FrameGenerator, StereoMuxer
 
 
-def essFalsestereoDetector(x: list, frameSize=1024, hopSize=512, correlationthreshold=0.98):
+def essFalsestereoDetector(x: list, frameSize=1024, hopSize=512, correlationthreshold=0.98, percentageThreshold=90):
     """Computes the correlation and consideres if the information in the two channels is the same
     
     Args:
@@ -27,7 +27,8 @@ def essFalsestereoDetector(x: list, frameSize=1024, hopSize=512, correlationthre
     falseStereoDetector = FalseStereoDetector()
 
     for frameL, frameR in zip(lfg, rfg):
-        if falseStereoDetector(mux(frameL, frameR))[0] > correlationthreshold:
+        print(falseStereoDetector(mux(frameL, frameR)))
+        if falseStereoDetector(mux(frameL, frameR))[1] > correlationthreshold:
             count += 1
         # frame_bool, _ = estd.FalseStereoDetector()(frame)
         # if frame_bool == 1: count += 1
@@ -36,10 +37,10 @@ def essFalsestereoDetector(x: list, frameSize=1024, hopSize=512, correlationthre
     falseStereoDetector.reset()
     percentage = 100*count/total
     
-    return percentage > 90.0, round(percentage, 2)
+    return round(percentage, 2), percentage > percentageThreshold
 
 
-def outofPhaseDetector(x: list, frameSize=1024, hopSize=512, correlationthreshold=-0.8):
+def outofPhaseDetector(x: list, frameSize=1024, hopSize=512, correlationthreshold=-0.8, percentageThreshold=90):
     """Computes the correlation and flags the file if the file has a 90% of frames out of phase
     
     Args:
@@ -64,12 +65,12 @@ def outofPhaseDetector(x: list, frameSize=1024, hopSize=512, correlationthreshol
     falseStereoDetector = FalseStereoDetector()
 
     for frameL, frameR in zip(lfg, rfg):
+        print(falseStereoDetector(mux(frameL, frameR))[1])
         if falseStereoDetector(mux(frameL, frameR))[1] < correlationthreshold:
             count += 1
         total += 1
 
     falseStereoDetector.reset()
     percentage = 100*count/total
-    finalBool = percentage > 90.0
-    
-    return finalBool, round(percentage, 2)
+
+    return round(percentage, 2), percentage > percentageThreshold

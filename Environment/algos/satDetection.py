@@ -1,13 +1,14 @@
 from essentia.standard import SaturationDetector, FrameGenerator
 
 
-def essSaturationDetector(x: list, frameSize=1024, hopSize=512, **kwargs):
+def essSaturationDetector(x: list, frameSize=1024, hopSize=512, percentageThrehold=5, **kwargs):
     """Breaks x into frames and computes the start and end indexes 
     
     Args:
         x: (list) input signal
         frameSize: (int) frame size for the analysis in Saturation Detector
         hopSize: (int) hopSize for the analysis in Saturation Detector
+        percentageThrehold: (int)
     
     Kwargs:
         Same **kwargs than the ones for SaturationDetector
@@ -34,6 +35,6 @@ def essSaturationDetector(x: list, frameSize=1024, hopSize=512, **kwargs):
             count += 1
         total += 1
 
-    # del frame; del frame_starts; del frame_ends; del x
-    # x = None; frame = None; frame_starts = None; frame_ends= None
-    return starts, ends, round(100*count/total, 2)
+    percentage = round(100*count/total, 2)
+
+    return starts, ends, percentage, percentage > percentageThrehold

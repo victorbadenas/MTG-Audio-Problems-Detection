@@ -1,7 +1,7 @@
 from essentia.standard import ClickDetector, FrameGenerator
 
 
-def essClickDetector(x, frameSize=1024, hopSize=512, **kwargs):
+def essClickDetector(x, frameSize=1024, hopSize=512, percentageThrehold=1,  **kwargs):
     """Breaks x into frames and computes the start and end indexes.
     
     Args:
@@ -36,6 +36,8 @@ def essClickDetector(x, frameSize=1024, hopSize=512, **kwargs):
         if len(frame_starts) + len(frame_ends) != 0:
             count += 1
         total += 1
+
+    percentage = round(100*count/total, 2)
     # print("Number of frames:", i+1)
     # del x; del frame; del frame_ends; del frame_starts;
-    return starts, ends, round(100*count/total, 2)
+    return starts, ends, percentage, percentage > percentageThrehold

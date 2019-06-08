@@ -2,7 +2,7 @@ from essentia.standard import StartStopCut
 from essentia import array as esarr
 
 
-def essStartstopDetector(x, frameSize=1024, hopSize=512, **kwargs):
+def essStartstopDetector(x, frameSize=1024, hopSize=512, percentageThreshold=10, **kwargs):
     """Breaks x into frames and computes the start and end indexes.
     
     Args:
@@ -21,6 +21,7 @@ def essStartstopDetector(x, frameSize=1024, hopSize=512, **kwargs):
 
     startCut, stopCut = startStopCut(esarr(x))
 
+    percentage = round(100*(startCut + stopCut)/len(x), 2)
     # len_x = len(x)
     # del x; del startStopCut;
-    return round(100*(startCut + stopCut)/len(x), 2)
+    return percentage, percentage > percentageThreshold
