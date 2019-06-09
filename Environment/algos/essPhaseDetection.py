@@ -1,9 +1,9 @@
-from essentia.standard import FalseStereoDetector, StereoDemuxer, FrameGenerator, StereoMuxer
+from essentia.standard import FalseStereoDetector, StereoDemuxer, FrameGenerator, StereoMuxer, AudioLoader
 
 
-def essFalsestereoDetector(x: list, frameSize=1024, hopSize=512, correlationthreshold=0.98, percentageThreshold=90):
+def essFalsestereoDetector(x: list, frameSize=1024, hopSize=512, correlationThreshold=0.98, percentageThreshold=90, **kwargs):
     """Computes the correlation and consideres if the information in the two channels is the same
-    
+
     Args:
         x: (list) input signal
         frameSize: (int) frame size for the analysis in falseStereoDetector
@@ -15,34 +15,27 @@ def essFalsestereoDetector(x: list, frameSize=1024, hopSize=512, correlationthre
         percentace: (float) How many frames were false stereo over all the frames
     """
     rx, lx = StereoDemuxer()(x)
-
-    lfg = FrameGenerator(lx, frameSize=frameSize, hopSize=hopSize, startFromZero=True)
-    rfg = FrameGenerator(rx, frameSize=frameSize, hopSize=hopSize, startFromZero=True)
-
     mux = StereoMuxer()
+    falseStereoDetector = FalseStereoDetector(
+        correlationThreshold=correlationThreshold, **kwargs)
 
-    total = 0
-    count = 0
+    lfg = FrameGenerator(lx, frameSize=frameSize,
+                         hopSize=hopSize, startFromZero=True)
+    rfg = FrameGenerator(rx, frameSize=frameSize,
+                         hopSize=hopSize, startFromZero=True)
 
-    falseStereoDetector = FalseStereoDetector()
-
-    for frameL, frameR in zip(lfg, rfg):
-        print(falseStereoDetector(mux(frameL, frameR)))
-        if falseStereoDetector(mux(frameL, frameR))[1] > correlationthreshold:
-            count += 1
-        # frame_bool, _ = estd.FalseStereoDetector()(frame)
-        # if frame_bool == 1: count += 1
-        total += 1
-
+    problematicFrames = sum([falseStereoDetector(mux(frameL, frameR))[0]
+                             for frameL, frameR in zip(lfg, rfg)])
     falseStereoDetector.reset()
-    percentage = 100*count/total
-    
-    return round(percentage, 2), percentage > percentageThreshold
+
+    conf = problematicFrames / lfg.num_frames()
+
+    return conf, conf > percentageThreshold/100
 
 
-def outofPhaseDetector(x: list, frameSize=1024, hopSize=512, correlationthreshold=-0.8, percentageThreshold=90):
+def outofPhaseDetector(x: list, frameSize=1024, hopSize=512, correlationThreshold=-0.8, percentageThreshold=90, **kwargs):
     """Computes the correlation and flags the file if the file has a 90% of frames out of phase
-    
+
     Args:
         x: (list) input signal
         frameSize: (int) frame size for the analysis in falseStereoDetector
@@ -54,23 +47,20 @@ def outofPhaseDetector(x: list, frameSize=1024, hopSize=512, correlationthreshol
         percentace: (float) How many frames were false stereo over all the frames
     """
     rx, lx = StereoDemuxer()(x)
-
-    lfg = FrameGenerator(lx, frameSize=frameSize, hopSize=hopSize, startFromZero=True)
-    rfg = FrameGenerator(rx, frameSize=frameSize, hopSize=hopSize, startFromZero=True)
-
     mux = StereoMuxer()
+    falseStereoDetector = FalseStereoDetector(**kwargs)
 
-    total = 0
-    count = 0
-    falseStereoDetector = FalseStereoDetector()
+    lfg = FrameGenerator(lx, frameSize=frameSize,
+                         hopSize=hopSize, startFromZero=True)
+    rfg = FrameGenerator(rx, frameSize=frameSize,
+                         hopSize=hopSize, startFromZero=True)
 
+    problematicFrames = 0
     for frameL, frameR in zip(lfg, rfg):
-        print(falseStereoDetector(mux(frameL, frameR))[1])
-        if falseStereoDetector(mux(frameL, frameR))[1] < correlationthreshold:
-            count += 1
-        total += 1
-
+        _, corr = falseStereoDetector(mux(frameL, frameR))
+        problematicFrames += corr < correlationThreshold
     falseStereoDetector.reset()
-    percentage = 100*count/total
 
-    return round(percentage, 2), percentage > percentageThreshold
+    conf = problematicFrames / lfg.num_frames()
+
+    return conf, conf > percentageThreshold/100

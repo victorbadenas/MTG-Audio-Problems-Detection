@@ -1,8 +1,9 @@
-from essentia.standard import FalseStereoDetector, StereoDemuxer, FrameGenerator, StereoMuxer, AudioLoader
 import argparse
+import os
+from essentia.standard import FalseStereoDetector, StereoDemuxer, FrameGenerator, StereoMuxer, AudioLoader
 
 
-def essFalsestereoDetector(x: list, frameSize=1024, hopSize=512, correlationthreshold=0.98, percentageThreshold=90):
+def essFalsestereoDetector(x: list, frameSize=1024, hopSize=512, correlationThreshold=0.98, percentageThreshold=90, channels=2, **kwargs):
     """Computes the correlation and consideres if the information in the two channels is the same
 
     Args:
@@ -15,32 +16,30 @@ def essFalsestereoDetector(x: list, frameSize=1024, hopSize=512, correlationthre
         final_bool: (bool) True if the information is the same in both channels, False otherwise
         percentace: (float) How many frames were false stereo over all the frames
     """
+    if channels < 2:
+        return 1, False, True
+
     rx, lx = StereoDemuxer()(x)
+    mux = StereoMuxer()
+    falseStereoDetector = FalseStereoDetector(correlationThreshold=correlationThreshold, **kwargs)
 
     lfg = FrameGenerator(lx, frameSize=frameSize, hopSize=hopSize, startFromZero=True)
     rfg = FrameGenerator(rx, frameSize=frameSize, hopSize=hopSize, startFromZero=True)
 
-    mux = StereoMuxer()
+    problematicFrames = sum([falseStereoDetector(mux(frameL, frameR))[0] for frameL, frameR in zip(lfg, rfg)])
+    # problematicFrames = []
+    # for frameL, frameR in zip(lfg, rfg):
+    #     res, corr = falseStereoDetector(mux(frameL, frameR))
+    #     problematicFrames.append(res)
 
-    total = 0
-    count = 0
+    falseStereoDetector.reset()
 
-    falseStereoDetector = FalseStereoDetector()
+    conf = float(sum(problematicFrames)) / float(lfg.num_frames())
 
-    for frameL, frameR in zip(lfg, rfg):
-        if falseStereoDetector(mux(frameL, frameR))[1] > correlationthreshold:
-            count += 1
-        # frame_bool, _ = estd.FalseStereoDetector()(frame)
-        # if frame_bool == 1: count += 1
-        total += 1
-
-    # falseStereoDetector.reset()
-    percentage = 100*count/total
-
-    return round(percentage, 2), percentage > percentageThreshold
+    return conf, conf > percentageThreshold/100, False
 
 
-def outofPhaseDetector(x: list, frameSize=1024, hopSize=512, correlationthreshold=-0.8, percentageThreshold=90):
+def outofPhaseDetector(x: list, frameSize=1024, hopSize=512, correlationThreshold=-0.8, percentageThreshold=90, channels=2, **kwargs):
     """Computes the correlation and flags the file if the file has a 90% of frames out of phase
 
     Args:
@@ -53,32 +52,39 @@ def outofPhaseDetector(x: list, frameSize=1024, hopSize=512, correlationthreshol
         final_bool: (bool) True if the information is the same in both channels, False otherwise
         percentace: (float) How many frames were false stereo over all the frames
     """
+    if channels < 2:
+        return 1, False, True
+
     rx, lx = StereoDemuxer()(x)
+    mux = StereoMuxer()
+    falseStereoDetector = FalseStereoDetector(**kwargs)
 
     lfg = FrameGenerator(lx, frameSize=frameSize, hopSize=hopSize, startFromZero=True)
     rfg = FrameGenerator(rx, frameSize=frameSize, hopSize=hopSize, startFromZero=True)
 
-    mux = StereoMuxer()
-
-    total = 0
-    count = 0
-    falseStereoDetector = FalseStereoDetector()
-
+    problematicFrames = 0
     for frameL, frameR in zip(lfg, rfg):
-        if falseStereoDetector(mux(frameL, frameR))[1] < correlationthreshold:
-            count += 1
-        total += 1
+        _, corr = falseStereoDetector(mux(frameL, frameR))
+        problematicFrames += corr < correlationThreshold
+    falseStereoDetector.reset()
 
-    # falseStereoDetector.reset()
-    percentage = 100*count/total
+    conf = problematicFrames / lfg.num_frames()
 
-    return round(percentage, 2), percentage > percentageThreshold
+    return conf, conf > percentageThreshold/100, False
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="calculate correlation for all the sounds in s folder")
     parser.add_argument("path", help="path")
     args = parser.parse_args()
-    audio, _, _, _, _, _ = AudioLoader(filename=args.path)()
-    print(essFalsestereoDetector(audio))
-    print(outofPhaseDetector(audio))
+    for file in os.listdir(args.path):
+        name = file
+        file = os.path.join(args.path, file)
+        if not os.path.isfile(file):
+            continue
+        if os.path.splitext(file)[1] != ".wav":
+            continue
+        print(name)
+        audio, sr, channels, _, _, _ = AudioLoader(filename=file)()
+        print("False Stereo: ",essFalsestereoDetector(audio, channels=channels))
+        print("OutofPhase: ",outofPhaseDetector(audio, channels=channels))
