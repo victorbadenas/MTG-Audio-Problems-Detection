@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import argparse
 from scipy.io import wavfile
 
+
 def calculateCorrelation(directory, upth, downth, M = 128):
 	H = M
 	count = np.array([0,0,0]) # [out of phase, normal, fake stereo]

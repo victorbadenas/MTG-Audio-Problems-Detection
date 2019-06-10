@@ -59,8 +59,8 @@ def single_json_compute(audioPath, jsonFolder, printFlag=False):
         silPercentage, silBool = essStartstopDetector(monoAudio, frameSize=frameSize, hopSize=hopSize)
     else:
         silPercentage, silBool = "Audio file too short", False
-    fsPercentage, fsBool = essFalsestereoDetector(audio, frameSize=frameSize, hopSize=hopSize)
-    oopPercentage, oopBool = outofPhaseDetector(audio, frameSize=frameSize, hopSize=hopSize)
+    fsPercentage, fsBool, fsMonoBool = essFalsestereoDetector(audio, frameSize=frameSize, hopSize=hopSize, channels=channels)
+    oopPercentage, oopBool, oopMonoBool = outofPhaseDetector(audio, frameSize=frameSize, hopSize=hopSize, channels=channels)
 
     snr, snrBool = snr(audio)
     extrBitDepth, bitDepthBool = bit(audio)
@@ -73,8 +73,8 @@ def single_json_compute(audioPath, jsonFolder, printFlag=False):
         "Clicks": {"Start indexes": len(clkStarts), "End indexes": len(clkEnds),
                    "Percentage": clkPercentage, "Bool": clkBool},
         "Silence": {"Percentage": silPercentage, "Bool": silBool},
-        "FalseStereo": {"Percentage": fsPercentage, "Bool": fsBool},
-        "OutofPhase": {"Percentage": oopPercentage, "Bool": oopBool},
+        "FalseStereo": {"Percentage": fsPercentage, "Bool": fsBool, "monoBool": fsMonoBool},
+        "OutofPhase": {"Percentage": oopPercentage, "Bool": oopBool, "monoBool": oopMonoBool},
         "NoiseBursts": {"Indexes": len(nbIndexes), "Percentage": nbPercentage, "Bool": nbBool},
         # "BitDepth": { "BitDepth": bitDepthBool, "extracted": extrBitDepth},
         # "Bandwidth": { "Bandwidth": bwBool, "cutfrequency": bwCutFrequency, "confidence": bwConfidence},
