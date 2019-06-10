@@ -49,7 +49,7 @@ def multi_file_compute(audiofolder: str, jsonfolder: str):
                     tsvfile.write(filename)
                     for problem in json_dict:
                         for feature in json_dict[problem]:
-                            tsvfile.write("\t" + str(json_dict[problem][feature]))
+                            tsvfile.write("\t{}".format(json_dict[problem][feature] if feature != "Bool" else str(json_dict[problem][feature]).upper()))
                     tsvfile.write("\n")
             pb.update(1)
     create_files_arrays(tsvpath)
