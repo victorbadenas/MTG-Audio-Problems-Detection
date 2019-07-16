@@ -1,0 +1,2 @@
+Filename,BitDepth,Bandwidth,lowSNR,Saturation,Hum,Clicks,Silence,FalseStereo,OutofPhase,NoiseBursts
+26f921e3.wav,False,False,False,False,False,True,True,False,False,False
