@@ -27,50 +27,31 @@ def biteval(filename):
     return u.str2bool(inp)
 
 def bandeval(filename):
-    # audio = AudioFile(filename)
-    # N = 2**int(np.log2(len(audio)))
-    # fft = 20*np.log10(abs(np.fft.fft(audio, N)))
-    # plt.plot(fft[:int(len(fft)/2)])
-    # plt.show()
     inp = input("Does this file have BANDWIDTH problems? [y/n]")
     return u.str2bool(inp)
 
 def snreval(filename):
-    # wave_obj = sa.WaveObject.from_wave_file(filename)
-    # play_obj = wave_obj.play()
-    # play_obj.wait_done()
     inp = input("Does this file have SNR problems? [y/n]")
     return u.str2bool(inp)
 
 def sateval(filename):
-    # audio = AudioFile(filename)
-    # plt.plot(audio)
-    # plt.show()
     inp = input("Does this file have SATURATION problems? [y/n]")
     return u.str2bool(inp)
 
 def humeval(filename):
-    # wave_obj = sa.WaveObject.from_wave_file(filename)
-    # play_obj = wave_obj.play()
-    # play_obj.wait_done()
     inp = input("Does this file have HUM problems? [y/n]")
     return u.str2bool(inp)
 
 def clickeval(filename):
-    # audio = AudioFile(filename)
-    # plt.plot(audio)
-    # plt.show()
     inp = input("Does this file have CLICK problems? [y/n]")
     return u.str2bool(inp)
 
 def silenceeval(filename):
-    # audio = AudioFile(filename)
-    # plt.plot(audio)
-    # plt.show()
     inp = input("Does this file have SILENCE problems? [y/n]")
     return u.str2bool(inp)
 
 def fseval(filename):
+    return False
     audio, SR, channels, _, br, _ = AudioLoader(filename=filename)()
     if len(audio.shape) == 1:
         return False
@@ -85,6 +66,7 @@ def fseval(filename):
     return u.str2bool(inp)
 
 def oopeval(filename):
+    return False
     audio, SR, channels, _, br, _ = AudioLoader(filename=filename)()
     if len(audio.shape) == 1:
         return False
@@ -99,9 +81,6 @@ def oopeval(filename):
     return u.str2bool(inp)
 
 def nbeval(filename):
-    # wave_obj = sa.WaveObject.from_wave_file(filename)
-    # play_obj = wave_obj.play()
-    # play_obj.wait_done()
     inp = input("Does this file have NOISE BURSTS problems? [y/n]")
     return u.str2bool(inp)
 
