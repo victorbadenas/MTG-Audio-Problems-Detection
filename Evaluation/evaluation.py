@@ -1,4 +1,5 @@
 import os
+import numpy as np
 from evalfuncs import *
 
 def main(datasetPath):
@@ -24,19 +25,25 @@ def main(datasetPath):
         if os.path.splitext(filename)[-1] != ".wav":
             continue
         if filename in alreadyRunFiles:
-            print(filename + "has already been evaluated")
+            print(filename + " has already been evaluated")
             continue
         fullfilename = os.path.join(datasetPath, filename)
         print("Now evaluating: ", filename)
         audio, SR, channels, _, br, _ = AudioLoader(filename=fullfilename)()
         if channels > 1:
-            fig, ax = plt.subplots(channels, 1, figsize=(15,9))
+            fig, ax = plt.subplots(channels + 1, 1)
             for i in range(channels):
                 ax[i].plot(audio[:i])
+            monoAudio = np.sum(audio, axis=1)/channels
+            ax[-1].plot(abs(np.fft.fft(monoAudio)))
             plt.show(block=False)
         else:
-            plt.plot(audio)
+            audio = audio[:,0]
+            fig, ax = plt.subplots(2, 1)
+            ax[0].plot(audio)
+            ax[1].plot(20*np.log10(abs(np.fft.fft(audio)[:int(len(audio)/2)])))
             plt.show(block=False)
+
         wave_obj = sa.WaveObject.from_wave_file(fullfilename)
         play_obj = wave_obj.play()
         play_obj.wait_done()
