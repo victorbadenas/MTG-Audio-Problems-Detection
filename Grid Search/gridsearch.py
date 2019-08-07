@@ -157,6 +157,9 @@ class gridSearch():
             recall = float(ret["truePositive"]) / float(ret["truePositive"] + ret["falseNegative"])
         else:
             recall = 0
+        print(ret)
+        print("precision:",precision)
+        print("recall:",recall)
         return ret, precision, recall
 
 
