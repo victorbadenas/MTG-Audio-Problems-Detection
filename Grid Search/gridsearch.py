@@ -1,16 +1,18 @@
 import sys
 import os
-import pandas as pd
-import utils as u
-import logging
-import numpy as np
-import essentia.standard as std
 
 scriptFolder = os.path.dirname(os.path.realpath(__file__))
 algosFolder = os.path.join(scriptFolder, '../Environment/algos')
 sys.path.append(algosFolder)
 
 from satDetection import essSaturationDetector
+from bwDetectionOOP import BwDetection
+from LowSnrOOP import LowSnrDetector
+import pandas as pd
+import utils as u
+import logging
+import numpy as np
+import essentia.standard as std
 
 Fbeta = 0.5
 
@@ -33,33 +35,30 @@ class gridSearch():
         self.groundTruth = pd.read_csv(groundTruthPath, index_col="Filename")
 
     def __call__(self):
-        self.bitdepth()
-        self.bandwidth()
+        # self.saturation()
+        # self.bandwidth()
         self.lowsnr()
-        self.saturation()
         self.hum()
         self.clicks()
         self.silence()
-        self.falsestereo()
-        self.outofphase()
         self.noisebursts()
 
     def saturation(self):
-        energyThreshold = [-30, -20, -10, -7, -5, -3, -1, -0.01]
-        differentialThreshold = [0.001, 0.005, 0.01, 0.05, 0.1, 0.5, 1, 5, 10]
-        minimumDuration = [0.001, 0.005, 0.01, 0.05, 0.1, 0.5, 1]
+        satEnergyThreshold = [-30, -20, -10, -7, -5, -3, -1, -0.01]
+        satDifferentialThreshold = [0.001, 0.005, 0.01, 0.05, 0.1, 0.5, 1, 5, 10]
+        satMinimumDuration = [0.001, 0.005, 0.01, 0.05, 0.1, 0.5, 1]
 
         precisionArr = []
         recallArr = []
         FscoreArr = []
-        for value in energyThreshold:
+        for value in BWsumThreshold:
             print("energy Threshold: {} being evaluated".format(value))
             valueResults = []
             for i, filename in enumerate(self.files):
                 print("Executing file {} number {}/{}".format(filename, i+1, len(self.files)), end = '\r')
                 audio, sr, channels, _, _, _ = std.AudioLoader(filename=filename)()
                 audio = np.sum(audio, axis=1)/channels
-                _, _, _, ret = essSaturationDetector(audio, energyThreshold=value)
+                _, _, _, ret = essSaturationDetector(audio, BWsumThreshold=value)
                 valueResults.append((filename.replace(self.wavDatasetPath, ""), ret))
             print('')
             valueResults = sorted(valueResults, key=lambda x: x[0])
@@ -67,19 +66,19 @@ class gridSearch():
             precisionArr.append(precision)
             recallArr.append(recall)
             FscoreArr.append((1 + Fbeta**2) * precision * recall / (Fbeta**2 * precision + recall))
-        u.plot("./results/energyThreshold.png", precision=precisionArr, recall=recallArr, Fscore=FscoreArr, x_values=energyThreshold)
+        u.plot("./results/BWsumThreshold.png", precision=precisionArr, recall=recallArr, Fscore=FscoreArr, x_values=BWsumThreshold)
 
         precisionArr = []
         recallArr = []
         FscoreArr = []
-        for value in differentialThreshold:
+        for value in satDifferentialThreshold:
             print("energy Threshold: {} being evaluated".format(value))
             valueResults = []
             for i, filename in enumerate(self.files):
                 print("Executing file {} number {}/{}".format(filename, i+1, len(self.files)), end='\r')
                 audio, sr, channels, _, _, _ = std.AudioLoader(filename=filename)()
                 audio = np.sum(audio, axis=1)/channels
-                _, _, _, ret = essSaturationDetector(audio, differentialThreshold=value)
+                _, _, _, ret = essSaturationDetector(audio, satDifferentialThreshold=value)
                 valueResults.append((filename.replace(self.wavDatasetPath, ""), ret))
             print('')
             valueResults = sorted(valueResults, key=lambda x: x[0])
@@ -87,19 +86,19 @@ class gridSearch():
             precisionArr.append(precision)
             recallArr.append(recall)
             FscoreArr.append((1 + Fbeta**2) * precision * recall / (Fbeta**2 * precision + recall))
-        u.plot("./results/differentialThreshold.png", precision=precisionArr,recall=recallArr, Fscore=FscoreArr, x_values=differentialThreshold)
+        u.plot("./results/satDifferentialThreshold.png", precision=precisionArr,recall=recallArr, Fscore=FscoreArr, x_values=satDifferentialThreshold)
         
         precisionArr = []
         recallArr = []
         FscoreArr = []
-        for value in minimumDuration:
+        for value in satMinimumDuration:
             print("energy Threshold: {} being evaluated".format(value))
             valueResults = []
             for i, filename in enumerate(self.files):
                 print("Executing file {} number {}/{}".format(filename, i+1, len(self.files)), end='\r')
                 audio, sr, channels, _, _, _ = std.AudioLoader(filename=filename)()
                 audio = np.sum(audio, axis=1)/channels
-                _, _, _, ret = essSaturationDetector(audio, minimumDuration=value)
+                _, _, _, ret = essSaturationDetector(audio, satMinimumDuration=value)
                 valueResults.append((filename.replace(self.wavDatasetPath, ""), ret))
             print('')
             valueResults = sorted(valueResults, key=lambda x: x[0])
@@ -107,17 +106,135 @@ class gridSearch():
             precisionArr.append(precision)
             recallArr.append(recall)
             FscoreArr.append((1 + Fbeta**2) * precision * recall / (Fbeta**2 * precision + recall))
-        u.plot("./results/minimumDuration.png", precision=precisionArr,recall=recallArr, Fscore=FscoreArr, x_values=minimumDuration)
-
-    def bitdepth(self):
-        pass
+        u.plot("./results/satMinimumDuration.png", precision=precisionArr,recall=recallArr, Fscore=FscoreArr, x_values=satMinimumDuration)
 
     def bandwidth(self):
-        pass
+        BWsumThreshold = [1e-7, 5e-7, 1e-6, 5e-6, 1e-5, 5e-5, 1e-4, 5e-4]
+
+        bandWidth = BwDetection()
+
+        precisionArr = []
+        recallArr = []
+        FscoreArr = []
+        for value in BWsumThreshold:
+            print("sumThreshold: {} being evaluated".format(value))
+            valueResults = []
+            for i, filename in enumerate(self.files):
+                print("Executing file {} number {}/{}".format(filename, i+1, len(self.files)), end='\r')
+                audio, sr, channels, _, _, _ = std.AudioLoader(filename=filename)()
+                audio = np.sum(audio, axis=1)/channels
+                _, _, ret = bandWidth(audio, sr, sumThreshold=value)
+                valueResults.append((filename.replace(self.wavDatasetPath, ""), ret))
+            print('')
+            valueResults = sorted(valueResults, key=lambda x: x[0])
+            _, precision, recall = self.evaluateValue(valueResults, "Saturation")
+            precisionArr.append(precision)
+            recallArr.append(recall)
+            FscoreArr.append((1 + Fbeta**2) * precision * recall / (Fbeta**2 * precision + recall))
+        u.plot("./results/BWsumThreshold.png", precision=precisionArr,recall=recallArr, Fscore=FscoreArr, x_values=BWsumThreshold)
+
+        BWConfTh = [0.6, 0.7, 0.8, 0.9]
+        precisionArr = []
+        recallArr = []
+        FscoreArr = []
+        for value in BWConfTh:
+            print("ConfTh: {} being evaluated".format(value))
+            valueResults = []
+            for i, filename in enumerate(self.files):
+                print("Executing file {} number {}/{}".format(filename, i+1, len(self.files)), end='\r')
+                audio, sr, channels, _, _, _ = std.AudioLoader(filename=filename)()
+                audio = np.sum(audio, axis=1)/channels
+                bandWidth = BwDetection(confTh=value)
+                _, _, ret = bandWidth(audio, sr)
+                valueResults.append((filename.replace(self.wavDatasetPath, ""), ret))
+            print('')
+            valueResults = sorted(valueResults, key=lambda x: x[0])
+            _, precision, recall = self.evaluateValue(valueResults, "Saturation")
+            precisionArr.append(precision)
+            recallArr.append(recall)
+            FscoreArr.append((1 + Fbeta**2) * precision * recall / (Fbeta**2 * precision + recall))
+        u.plot("./results/BWConfTh.png", precision=precisionArr,recall=recallArr, Fscore=FscoreArr, x_values=BWConfTh)
 
     def lowsnr(self):
-        pass
+        snrnrgThresholdArr = [0.1, 0.3, 0.5, 0.7, 0.9]
+        snracThresholdArr = [0.1, 0.3, 0.5, 0.7, 0.9]
+        snrThresholdArr = [-3, -1, 1, 3, 5, 7, 9]
 
+        precisionArr = []
+        recallArr = []
+        FscoreArr = []
+        for value in snrnrgThresholdArr:
+            print("sumThreshold: {} being evaluated".format(value))
+            valueResults = []
+            lsd = LowSnrDetector(nrgThreshold=value)
+            for i, filename in enumerate(self.files):
+                print("Executing file {} number {}/{}".format(filename, i+1, len(self.files)), end='\r')
+                audio, sr, channels, _, _, _ = std.AudioLoader(filename=filename)()
+                audio = np.sum(audio, axis=1)/channels
+                _, ret = lsd(audio)
+                valueResults.append((filename.replace(self.wavDatasetPath, ""), ret))
+            print('')
+            valueResults = sorted(valueResults, key=lambda x: x[0])
+            _, precision, recall = self.evaluateValue(valueResults, "Saturation")
+            precisionArr.append(precision)
+            recallArr.append(recall)
+            FscoreArr.append((1 + Fbeta**2) * precision * recall / (Fbeta**2 * precision + recall))
+        u.plot("./results/snrnrgThreshold.png", precision=precisionArr, recall=recallArr, Fscore=FscoreArr, x_values=snrnrgThresholdArr)
+
+        precisionArr = []
+        recallArr = []
+        FscoreArr = []
+        for value in snracThresholdArr:
+            print("sumThreshold: {} being evaluated".format(value))
+            valueResults = []
+            lsd = LowSnrDetector(acThreshold=value)
+            for i, filename in enumerate(self.files):
+                print("Executing file {} number {}/{}".format(filename,
+                                                              i+1, len(self.files)), end='\r')
+                audio, sr, channels, _, _, _ = std.AudioLoader(
+                    filename=filename)()
+                audio = np.sum(audio, axis=1)/channels
+                _, ret = lsd(audio)
+                valueResults.append(
+                    (filename.replace(self.wavDatasetPath, ""), ret))
+            print('')
+            valueResults = sorted(valueResults, key=lambda x: x[0])
+            _, precision, recall = self.evaluateValue(
+                valueResults, "Saturation")
+            precisionArr.append(precision)
+            recallArr.append(recall)
+            FscoreArr.append((1 + Fbeta**2) * precision *
+                             recall / (Fbeta**2 * precision + recall))
+        u.plot("./results/snracThreshold.png", precision=precisionArr,
+               recall=recallArr, Fscore=FscoreArr, x_values=snracThresholdArr)
+
+        precisionArr = []
+        recallArr = []
+        FscoreArr = []
+        for value in snrThresholdArr:
+            print("sumThreshold: {} being evaluated".format(value))
+            valueResults = []
+            lsd = LowSnrDetector(snrThreshold=value)
+            for i, filename in enumerate(self.files):
+                print("Executing file {} number {}/{}".format(filename,
+                                                              i+1, len(self.files)), end='\r')
+                audio, sr, channels, _, _, _ = std.AudioLoader(
+                    filename=filename)()
+                audio = np.sum(audio, axis=1)/channels
+                _, ret = lsd(audio)
+                valueResults.append(
+                    (filename.replace(self.wavDatasetPath, ""), ret))
+            print('')
+            valueResults = sorted(valueResults, key=lambda x: x[0])
+            _, precision, recall = self.evaluateValue(
+                valueResults, "Saturation")
+            precisionArr.append(precision)
+            recallArr.append(recall)
+            FscoreArr.append((1 + Fbeta**2) * precision *
+                             recall / (Fbeta**2 * precision + recall))
+        u.plot("./results/snrThreshold.png", precision=precisionArr,
+               recall=recallArr, Fscore=FscoreArr, x_values=snrThresholdArr)
+               
     def hum(self):
         pass
 
@@ -152,11 +269,11 @@ class gridSearch():
         if ret["truePositive"] + ret["falsePositive"] != 0:
             precision = float(ret["truePositive"]) / float(ret["truePositive"] + ret["falsePositive"])
         else:
-            precision = 0
+            precision = 1
         if ret["truePositive"] + ret["falseNegative"] != 0:
             recall = float(ret["truePositive"]) / float(ret["truePositive"] + ret["falseNegative"])
         else:
-            recall = 0
+            recall = 1
         print(ret)
         print("precision:",precision)
         print("recall:",recall)

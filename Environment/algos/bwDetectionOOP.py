@@ -18,11 +18,11 @@ class BwDetection:
         self.hist = None
         self.mostLikelyBin = None
 
-    def __call__(self, audio, SR):
+    def __call__(self, audio, SR, sumThreshold=1e-5):
         self.__reset__()
 
-        if audio.shape[1] != 1:
-            audio = (audio[:, 0] + audio[:, 1]) / 2
+        if audio.ndim > 1:
+            audio = np.sum(audio, axis=1)/audio.ndim
 
         fcIndexArr = []
         self.hist = np.zeros(int(self.frameSize / 2 + 1))
@@ -42,7 +42,7 @@ class BwDetection:
 
             if nrg >= 0.1*maxNrg:
                 for j in reversed(range(len(frameFft))):
-                    if sum(frameFft[j:]/j) >= 1e-5:
+                    if sum(frameFft[j:]/j) >= sumThreshold:
                         fcIndexArr.append(j)
                         self.hist[j] += nrg
                         break
