@@ -8,6 +8,9 @@ sys.path.append(algosFolder)
 from satDetection import essSaturationDetector
 from bwDetectionOOP import BwDetection
 from LowSnrOOP import LowSnrDetector
+from clickDetection import essClickDetector
+from noiseDetection import essHumDetector
+from startstopDetection import essStartstopDetector
 import pandas as pd
 import utils as u
 import logging
@@ -37,8 +40,8 @@ class gridSearch():
     def __call__(self):
         # self.saturation()
         # self.bandwidth()
-        self.lowsnr()
-        self.hum()
+        # self.lowsnr()
+        # self.hum()
         self.clicks()
         self.silence()
         self.noisebursts()
@@ -51,14 +54,14 @@ class gridSearch():
         precisionArr = []
         recallArr = []
         FscoreArr = []
-        for value in BWsumThreshold:
+        for value in satEnergyThreshold:
             print("energy Threshold: {} being evaluated".format(value))
             valueResults = []
             for i, filename in enumerate(self.files):
                 print("Executing file {} number {}/{}".format(filename, i+1, len(self.files)), end = '\r')
                 audio, sr, channels, _, _, _ = std.AudioLoader(filename=filename)()
                 audio = np.sum(audio, axis=1)/channels
-                _, _, _, ret = essSaturationDetector(audio, BWsumThreshold=value)
+                _, _, _, ret = essSaturationDetector(audio, energyThreshold=value)
                 valueResults.append((filename.replace(self.wavDatasetPath, ""), ret))
             print('')
             valueResults = sorted(valueResults, key=lambda x: x[0])
@@ -66,7 +69,7 @@ class gridSearch():
             precisionArr.append(precision)
             recallArr.append(recall)
             FscoreArr.append((1 + Fbeta**2) * precision * recall / (Fbeta**2 * precision + recall))
-        u.plot("./results/BWsumThreshold.png", precision=precisionArr, recall=recallArr, Fscore=FscoreArr, x_values=BWsumThreshold)
+        u.plot("./results/satEnergyThreshold.png", precision=precisionArr, recall=recallArr, Fscore=FscoreArr, x_values=satEnergyThreshold)
 
         precisionArr = []
         recallArr = []
@@ -78,7 +81,7 @@ class gridSearch():
                 print("Executing file {} number {}/{}".format(filename, i+1, len(self.files)), end='\r')
                 audio, sr, channels, _, _, _ = std.AudioLoader(filename=filename)()
                 audio = np.sum(audio, axis=1)/channels
-                _, _, _, ret = essSaturationDetector(audio, satDifferentialThreshold=value)
+                _, _, _, ret = essSaturationDetector(audio, differentialThreshold=value)
                 valueResults.append((filename.replace(self.wavDatasetPath, ""), ret))
             print('')
             valueResults = sorted(valueResults, key=lambda x: x[0])
@@ -98,7 +101,7 @@ class gridSearch():
                 print("Executing file {} number {}/{}".format(filename, i+1, len(self.files)), end='\r')
                 audio, sr, channels, _, _, _ = std.AudioLoader(filename=filename)()
                 audio = np.sum(audio, axis=1)/channels
-                _, _, _, ret = essSaturationDetector(audio, satMinimumDuration=value)
+                _, _, _, ret = essSaturationDetector(audio, minimumDuration=value)
                 valueResults.append((filename.replace(self.wavDatasetPath, ""), ret))
             print('')
             valueResults = sorted(valueResults, key=lambda x: x[0])
@@ -127,7 +130,7 @@ class gridSearch():
                 valueResults.append((filename.replace(self.wavDatasetPath, ""), ret))
             print('')
             valueResults = sorted(valueResults, key=lambda x: x[0])
-            _, precision, recall = self.evaluateValue(valueResults, "Saturation")
+            _, precision, recall = self.evaluateValue(valueResults, "Bandwidth")
             precisionArr.append(precision)
             recallArr.append(recall)
             FscoreArr.append((1 + Fbeta**2) * precision * recall / (Fbeta**2 * precision + recall))
@@ -149,7 +152,7 @@ class gridSearch():
                 valueResults.append((filename.replace(self.wavDatasetPath, ""), ret))
             print('')
             valueResults = sorted(valueResults, key=lambda x: x[0])
-            _, precision, recall = self.evaluateValue(valueResults, "Saturation")
+            _, precision, recall = self.evaluateValue(valueResults, "Bandwidth")
             precisionArr.append(precision)
             recallArr.append(recall)
             FscoreArr.append((1 + Fbeta**2) * precision * recall / (Fbeta**2 * precision + recall))
@@ -175,7 +178,7 @@ class gridSearch():
                 valueResults.append((filename.replace(self.wavDatasetPath, ""), ret))
             print('')
             valueResults = sorted(valueResults, key=lambda x: x[0])
-            _, precision, recall = self.evaluateValue(valueResults, "Saturation")
+            _, precision, recall = self.evaluateValue(valueResults, "lowSNR")
             precisionArr.append(precision)
             recallArr.append(recall)
             FscoreArr.append((1 + Fbeta**2) * precision * recall / (Fbeta**2 * precision + recall))
@@ -200,7 +203,7 @@ class gridSearch():
             print('')
             valueResults = sorted(valueResults, key=lambda x: x[0])
             _, precision, recall = self.evaluateValue(
-                valueResults, "Saturation")
+                valueResults, "lowSNR")
             precisionArr.append(precision)
             recallArr.append(recall)
             FscoreArr.append((1 + Fbeta**2) * precision *
@@ -227,7 +230,7 @@ class gridSearch():
             print('')
             valueResults = sorted(valueResults, key=lambda x: x[0])
             _, precision, recall = self.evaluateValue(
-                valueResults, "Saturation")
+                valueResults, "lowSNR")
             precisionArr.append(precision)
             recallArr.append(recall)
             FscoreArr.append((1 + Fbeta**2) * precision *
@@ -236,19 +239,197 @@ class gridSearch():
                recall=recallArr, Fscore=FscoreArr, x_values=snrThresholdArr)
                
     def hum(self):
-        pass
+        timeWindow = [0.1, 0.3, 0.5, 1, 3, 5]
+        precisionArr = []
+        recallArr = []
+        FscoreArr = []
+        for value in timeWindow:
+            print("sumThreshold: {} being evaluated".format(value))
+            valueResults = []
+            for i, filename in enumerate(self.files):
+                print("Executing file {} number {}/{}".format(filename, i+1, len(self.files)), end='\r')
+                audio, sr, channels, _, _, _ = std.AudioLoader(filename=filename)()
+                audio = np.sum(audio, axis=1)/channels
+                _, ret = essHumDetector(audio, timeWindow=value)
+                valueResults.append((filename.replace(self.wavDatasetPath, ""), ret))
+            print('')
+            valueResults = sorted(valueResults, key=lambda x: x[0])
+            _, precision, recall = self.evaluateValue(valueResults, "Hum")
+            precisionArr.append(precision)
+            recallArr.append(recall)
+            FscoreArr.append((1 + Fbeta**2) * precision * recall / (Fbeta**2 * precision + recall))
+        u.plot("./results/HumTimeWindow.png", precision=precisionArr,recall=recallArr, Fscore=FscoreArr, x_values=timeWindow)
+
+        minimumDuration = [0.01, 0.07, 0.1, 0.3, 0.5, 1, 3, 5]
+        precisionArr = []
+        recallArr = []
+        FscoreArr = []
+        for value in minimumDuration:
+            print("sumThreshold: {} being evaluated".format(value))
+            valueResults = []
+            for i, filename in enumerate(self.files):
+                print("Executing file {} number {}/{}".format(filename, i+1, len(self.files)), end='\r')
+                audio, sr, channels, _, _, _ = std.AudioLoader(filename=filename)()
+                audio = np.sum(audio, axis=1)/channels
+                _, ret = essHumDetector(audio, minimumDuration=value)
+                valueResults.append((filename.replace(self.wavDatasetPath, ""), ret))
+            print('')
+            valueResults = sorted(valueResults, key=lambda x: x[0])
+            _, precision, recall = self.evaluateValue(valueResults, "Hum")
+            precisionArr.append(precision)
+            recallArr.append(recall)
+            FscoreArr.append((1 + Fbeta**2) * precision * recall / (Fbeta**2 * precision + recall))
+        u.plot("./results/HumminimumDuration.png", precision=precisionArr,recall=recallArr, Fscore=FscoreArr, x_values=minimumDuration)
+
+        timeContinuity = [0.1, 0.3, 0.5, 1, 3, 5]
+        precisionArr = []
+        recallArr = []
+        FscoreArr = []
+        for value in timeContinuity:
+            print("sumThreshold: {} being evaluated".format(value))
+            valueResults = []
+            for i, filename in enumerate(self.files):
+                print("Executing file {} number {}/{}".format(filename, i+1, len(self.files)), end='\r')
+                audio, sr, channels, _, _, _ = std.AudioLoader(filename=filename)()
+                audio = np.sum(audio, axis=1)/channels
+                _, ret = essHumDetector(audio, timeContinuity=value)
+                valueResults.append((filename.replace(self.wavDatasetPath, ""), ret))
+            print('')
+            valueResults = sorted(valueResults, key=lambda x: x[0])
+            _, precision, recall = self.evaluateValue(valueResults, "Hum")
+            precisionArr.append(precision)
+            recallArr.append(recall)
+            FscoreArr.append((1 + Fbeta**2) * precision * recall / (Fbeta**2 * precision + recall))
+        u.plot("./results/HumtimeContinuity.png", precision=precisionArr,recall=recallArr, Fscore=FscoreArr, x_values=timeContinuity)
+
+        numberHarmonics = [i for i in range(6)]
+        precisionArr = []
+        recallArr = []
+        FscoreArr = []
+        for value in numberHarmonics:
+            print("sumThreshold: {} being evaluated".format(value))
+            valueResults = []
+            for i, filename in enumerate(self.files):
+                print("Executing file {} number {}/{}".format(filename, i+1, len(self.files)), end='\r')
+                audio, sr, channels, _, _, _ = std.AudioLoader(filename=filename)()
+                audio = np.sum(audio, axis=1)/channels
+                _, ret = essHumDetector(audio, numberHarmonics=value)
+                valueResults.append((filename.replace(self.wavDatasetPath, ""), ret))
+            print('')
+            valueResults = sorted(valueResults, key=lambda x: x[0])
+            _, precision, recall = self.evaluateValue(valueResults, "Hum")
+            precisionArr.append(precision)
+            recallArr.append(recall)
+            FscoreArr.append((1 + Fbeta**2) * precision * recall / (Fbeta**2 * precision + recall))
+        u.plot("./results/HumnumberHarmonics.png", precision=precisionArr,recall=recallArr, Fscore=FscoreArr, x_values=numberHarmonics)
 
     def clicks(self):
-        pass
+        order = [int(2*i) for i in range(1,20)]
+        detectionThreshold = [0, 5, 10, 15, 20, 25, 30, 35]
+        powerEstimationThreshold = [int(2*i) for i in range(8)]
+        silenceThreshold = [-1*int(10*i) for i in range(8)][::-1]
+
+        precisionArr = []
+        recallArr = []
+        FscoreArr = []
+        for value in order:
+            print("order: {} being evaluated".format(value))
+            valueResults = []
+            for i, filename in enumerate(self.files):
+                print("Executing file {} number {}/{}".format(filename, i+1, len(self.files)), end='\r')
+                audio, sr, channels, _, _, _ = std.AudioLoader(filename=filename)()
+                audio = np.sum(audio, axis=1)/channels
+                _, _, _, ret = essClickDetector(audio, order=value)
+                valueResults.append((filename.replace(self.wavDatasetPath, ""), ret))
+            print('')
+            valueResults = sorted(valueResults, key=lambda x: x[0])
+            _, precision, recall = self.evaluateValue(valueResults, "Clicks")
+            precisionArr.append(precision)
+            recallArr.append(recall)
+            FscoreArr.append((1 + Fbeta**2) * precision * recall / (Fbeta**2 * precision + recall))
+        u.plot("./results/clicksorder.png", precision=precisionArr,recall=recallArr, Fscore=FscoreArr, x_values=order)
+
+        precisionArr = []
+        recallArr = []
+        FscoreArr = []
+        for value in detectionThreshold:
+            print("detectionThreshold: {} being evaluated".format(value))
+            valueResults = []
+            for i, filename in enumerate(self.files):
+                print("Executing file {} number {}/{}".format(filename, i+1, len(self.files)), end='\r')
+                audio, sr, channels, _, _, _ = std.AudioLoader(filename=filename)()
+                audio = np.sum(audio, axis=1)/channels
+                _, _, _, ret = essClickDetector(audio, detectionThreshold=value)
+                valueResults.append((filename.replace(self.wavDatasetPath, ""), ret))
+            print('')
+            valueResults = sorted(valueResults, key=lambda x: x[0])
+            _, precision, recall = self.evaluateValue(valueResults, "Clicks")
+            precisionArr.append(precision)
+            recallArr.append(recall)
+            FscoreArr.append((1 + Fbeta**2) * precision * recall / (Fbeta**2 * precision + recall))
+        u.plot("./results/clicksdetectionThreshold.png", precision=precisionArr,recall=recallArr, Fscore=FscoreArr, x_values=detectionThreshold)
+
+        precisionArr = []
+        recallArr = []
+        FscoreArr = []
+        for value in powerEstimationThreshold:
+            print("powerEstimationThreshold: {} being evaluated".format(value))
+            valueResults = []
+            for i, filename in enumerate(self.files):
+                print("Executing file {} number {}/{}".format(filename, i+1, len(self.files)), end='\r')
+                audio, sr, channels, _, _, _ = std.AudioLoader(filename=filename)()
+                audio = np.sum(audio, axis=1)/channels
+                _, _, _, ret = essClickDetector(audio, powerEstimationThreshold=value)
+                valueResults.append((filename.replace(self.wavDatasetPath, ""), ret))
+            print('')
+            valueResults = sorted(valueResults, key=lambda x: x[0])
+            _, precision, recall = self.evaluateValue(valueResults, "Clicks")
+            precisionArr.append(precision)
+            recallArr.append(recall)
+            FscoreArr.append((1 + Fbeta**2) * precision * recall / (Fbeta**2 * precision + recall))
+        u.plot("./results/clickspowerEstimationThreshold.png", precision=precisionArr,recall=recallArr, Fscore=FscoreArr, x_values=powerEstimationThreshold)
+
+        precisionArr = []
+        recallArr = []
+        FscoreArr = []
+        for value in silenceThreshold:
+            print("silenceThreshold: {} being evaluated".format(value))
+            valueResults = []
+            for i, filename in enumerate(self.files):
+                print("Executing file {} number {}/{}".format(filename, i+1, len(self.files)), end='\r')
+                audio, sr, channels, _, _, _ = std.AudioLoader(filename=filename)()
+                audio = np.sum(audio, axis=1)/channels
+                _, _, _, ret = essClickDetector(audio, silenceThreshold=value)
+                valueResults.append((filename.replace(self.wavDatasetPath, ""), ret))
+            print('')
+            valueResults = sorted(valueResults, key=lambda x: x[0])
+            _, precision, recall = self.evaluateValue(valueResults, "Clicks")
+            precisionArr.append(precision)
+            recallArr.append(recall)
+            FscoreArr.append((1 + Fbeta**2) * precision * recall / (Fbeta**2 * precision + recall))
+        u.plot("./results/clickssilenceThreshold.png", precision=precisionArr,recall=recallArr, Fscore=FscoreArr, x_values=silenceThreshold)
 
     def silence(self):
-        pass
-
-    def falsestereo(self):
-        pass
-
-    def outofphase(self):
-        pass
+        threshold = [-1*int(10*i) for i in range(1, 11)][::-1]
+        precisionArr = []
+        recallArr = []
+        FscoreArr = []
+        for value in threshold:
+            print("threshold: {} being evaluated".format(value))
+            valueResults = []
+            for i, filename in enumerate(self.files):
+                print("Executing file {} number {}/{}".format(filename, i+1, len(self.files)), end='\r')
+                audio, sr, channels, _, _, _ = std.AudioLoader(filename=filename)()
+                audio = np.sum(audio, axis=1)/channels
+                _, _, _, ret = essStartstopDetector(audio, threshold=value)
+                valueResults.append((filename.replace(self.wavDatasetPath, ""), ret))
+            print('')
+            valueResults = sorted(valueResults, key=lambda x: x[0])
+            _, precision, recall = self.evaluateValue(valueResults, "Clicks")
+            precisionArr.append(precision)
+            recallArr.append(recall)
+            FscoreArr.append((1 + Fbeta**2) * precision * recall / (Fbeta**2 * precision + recall))
+        u.plot("./results/silencethreshold.png", precision=precisionArr,recall=recallArr, Fscore=FscoreArr, x_values=threshold)
 
     def noisebursts(self):
         pass
