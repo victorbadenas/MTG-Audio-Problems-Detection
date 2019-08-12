@@ -9,8 +9,8 @@ from satDetection import essSaturationDetector
 from bwDetectionOOP import BwDetection
 from LowSnrOOP import LowSnrDetector
 from clickDetection import essClickDetector
-from noiseDetection import essHumDetector
 from startstopDetection import essStartstopDetector
+from noiseDetection import essHumDetector, essNoiseburstDetector
 import pandas as pd
 import utils as u
 import logging
@@ -42,8 +42,8 @@ class gridSearch():
         # self.bandwidth()
         # self.lowsnr()
         # self.hum()
-        self.clicks()
-        self.silence()
+        # self.clicks()
+        # self.silence()
         self.noisebursts()
 
     def saturation(self):
@@ -326,8 +326,8 @@ class gridSearch():
     def clicks(self):
         order = [int(2*i) for i in range(1,20)]
         detectionThreshold = [0, 5, 10, 15, 20, 25, 30, 35]
-        powerEstimationThreshold = [int(2*i) for i in range(8)]
-        silenceThreshold = [-1*int(10*i) for i in range(8)][::-1]
+        powerEstimationThreshold = [int(2*i) for i in range(1, 8)]
+        silenceThreshold = [-1*int(10*i) for i in range(1, 8)][::-1]
 
         precisionArr = []
         recallArr = []
@@ -421,7 +421,7 @@ class gridSearch():
                 print("Executing file {} number {}/{}".format(filename, i+1, len(self.files)), end='\r')
                 audio, sr, channels, _, _, _ = std.AudioLoader(filename=filename)()
                 audio = np.sum(audio, axis=1)/channels
-                _, _, _, ret = essStartstopDetector(audio, threshold=value)
+                _, ret = essStartstopDetector(audio, threshold=value)
                 valueResults.append((filename.replace(self.wavDatasetPath, ""), ret))
             print('')
             valueResults = sorted(valueResults, key=lambda x: x[0])
@@ -431,8 +431,76 @@ class gridSearch():
             FscoreArr.append((1 + Fbeta**2) * precision * recall / (Fbeta**2 * precision + recall))
         u.plot("./results/silencethreshold.png", precision=precisionArr,recall=recallArr, Fscore=FscoreArr, x_values=threshold)
 
-    def noisebursts(self):
-        pass
+        frameSize = [int(2**i) for i in range(5,10)]
+        precisionArr = []
+        recallArr = []
+        FscoreArr = []
+        for value in frameSize:
+            print("frameSize: {} being evaluated".format(value))
+            valueResults = []
+            for i, filename in enumerate(self.files):
+                print("Executing file {} number {}/{}".format(filename, i+1, len(self.files)), end='\r')
+                audio, sr, channels, _, _, _ = std.AudioLoader(filename=filename)()
+                audio = np.sum(audio, axis=1)/channels
+                _, ret = essStartstopDetector(audio, frameSize=value, hopSize=value)
+                valueResults.append((filename.replace(self.wavDatasetPath, ""), ret))
+            print('')
+            valueResults = sorted(valueResults, key=lambda x: x[0])
+            _, precision, recall = self.evaluateValue(valueResults, "Clicks")
+            precisionArr.append(precision)
+            recallArr.append(recall)
+            FscoreArr.append((1 + Fbeta**2) * precision * recall / (Fbeta**2 * precision + recall))
+        u.plot("./results/silenceframeSize.png", precision=precisionArr, recall=recallArr, Fscore=FscoreArr, x_values=frameSize)
+
+    def noisebursts(self): 
+        threshold = [2*i for i in range(-5,6)]
+        precisionArr = []
+        recallArr = []
+        FscoreArr = []
+        for value in threshold:
+            print("threshold: {} being evaluated".format(value))
+            valueResults = []
+            for i, filename in enumerate(self.files):
+                print("Executing file {} number {}/{}".format(filename, i+1, len(self.files)), end='\r')
+                audio, sr, channels, _, _, _ = std.AudioLoader(filename=filename)()
+                audio = np.sum(audio, axis=1)/channels
+                _, _, ret = essNoiseburstDetector(audio, threshold=value)
+                valueResults.append((filename.replace(self.wavDatasetPath, ""), ret))
+            print('')
+            valueResults = sorted(valueResults, key=lambda x: x[0])
+            _, precision, recall = self.evaluateValue(valueResults, "NoiseBursts")
+            precisionArr.append(precision)
+            recallArr.append(recall)
+            if (precision + recall) == 0.0:
+                FscoreArr.append(0.0)
+            else:
+                FscoreArr.append((1 + Fbeta**2) * precision * recall / (Fbeta**2 * precision + recall))
+        u.plot("./results/noisethreshold.png", precision=precisionArr, recall=recallArr, Fscore=FscoreArr, x_values=threshold)
+
+        alpha = [i/10 for i in range(1,10)]
+        precisionArr = []
+        recallArr = []
+        FscoreArr = []
+        for value in alpha:
+            print("alpha: {} being evaluated".format(value))
+            valueResults = []
+            for i, filename in enumerate(self.files):
+                print("Executing file {} number {}/{}".format(filename, i+1, len(self.files)), end='\r')
+                audio, sr, channels, _, _, _ = std.AudioLoader(filename=filename)()
+                audio = np.sum(audio, axis=1)/channels
+                _, _, ret = essNoiseburstDetector(audio, alpha=value)
+                valueResults.append((filename.replace(self.wavDatasetPath, ""), ret))
+            print('')
+            valueResults = sorted(valueResults, key=lambda x: x[0])
+            _, precision, recall = self.evaluateValue(valueResults, "NoiseBursts")
+            precisionArr.append(precision)
+            recallArr.append(recall)
+            if (precision + recall) == 0.0:
+                FscoreArr.append(0.0)
+            else:
+                FscoreArr.append((1 + Fbeta**2) * precision * recall / (Fbeta**2 * precision + recall))
+        u.plot("./results/noiseealpha.png", precision=precisionArr,
+               recall=recallArr, Fscore=FscoreArr, x_values=alpha)
 
     def evaluateValue(self, valueResults, label):
         gtlist = self.groundTruth[label].sort_index().tolist()
@@ -459,8 +527,6 @@ class gridSearch():
         print("precision:",precision)
         print("recall:",recall)
         return ret, precision, recall
-
-
 
 
 if __name__ == "__main__":

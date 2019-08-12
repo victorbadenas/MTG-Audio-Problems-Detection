@@ -44,7 +44,7 @@ def essHumDetector(x: list, Q0=.1, Q1=.55, frameSize=1024, hopSize=512, detectio
     return percentage, percentage > percentageThrehold
 
 
-def essNoiseburstDetector(x: list, frameSize=1024, hopSize=512, detectionThreshold=0.05, percentageThrehold=5):
+def essNoiseburstDetector(x: list, frameSize=1024, hopSize=512, detectionThreshold=0.05, percentageThrehold=5, **kwargs):
     """Computes the hum detection in x and computes a value over one of the path of the audio that has hum noise.
     
     Args:
@@ -56,7 +56,7 @@ def essNoiseburstDetector(x: list, frameSize=1024, hopSize=512, detectionThresho
     Returns:
         Part over one of the file whith hum noise
     """
-    noiseBurstDetector = NoiseBurstDetector()
+    noiseBurstDetector = NoiseBurstDetector(**kwargs)
 
     idxs = []
     count = 0
