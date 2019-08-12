@@ -1,0 +1,57 @@
+\normallinespacing
+
+\chapter{State of the Art}
+
+Previous work on automatic audio problems detection has been done by Pablo Alonso-Jiménez, Lluis Joglar-Ongay, Dmitry Bogdanov, 
+Xavier Serra in their paper Automatic detection of audio problems for quality control in digital music distribution presented to 
+the Audio Engineering Society on March 2019 in Ireland. On this paper, multiple audio defect detections were proposed as well as 
+multiple audio defects were described of which some will be relevant as they will be adapted and evaluated in this paper: \\
+\subsection{Phase defects}
+Phase defects correspond to unfavorable relationships between both channels of audio of a stereo file. In this case, 
+the relationship that is interesting for detecting it is the linear correlation between both channels as measured by the 
+pearson correlation coefficient. The pearson correlation is defined to be the division of the covariance of two signals 
+and the product of the standard deviation of them. That means that the range of values that the coefficient can take is [-1,1] 
+where the extremes are caused by the issues that we are tracking. \\
+\begin{itemize}
+\item False Stereo is caused mainly by the same information being in both channels of an audio file. This can be caused by 
+exporting a mono file as stereo in a Digital Audio Workstation (DAW) for instance and it is detected when the pearson coefficient 
+is close to 1. \\
+\item Out of Phase Stereo is caused by a sign shift between both channels of an audio file. This sign shift can be caused by 
+multiple causes, the most common one in recordings is microphone placement. When summed into a single channel audio file (mono) 
+some frequency components cancel due to the issue. The importance of good correlation between both channels on a stereo signal is 
+seen in the amount of articles that explain the importance of phase correlation meters in audio design and audio mixing workflows. 
+Some examples of those articles include [7] [4]. \\
+\end{itemize}
+\subsection{Silence defects}
+Having too much silence at the start or the end of the file can also be considered a problem as information with no valuable 
+content is being stored. For the detection of this issue the authors propose a frame by frame analysis computation of the rectified 
+envelope to find the last silent frame at the start of the file and the first silent frame at the end of the file. \\
+\subsection{Noise bursts defects}
+Noise bursts are characterized by a succession of artifactual samples, typically originated in the codification process of an audio 
+file and are part of the group that the authors denote as digital audio artifacts and that are defined by a succession of samples 
+that do not correspond to a realistic sound. \\
+The detection of this issue is done by thresholding the peaks of the second derivative of the of the signal. The threshold is not 
+fix but rather computed using an exponential moving average (EMA) filter over the quadratic mean value of the second derivative of 
+the input frame.\\
+\subsection{Humming defects}
+Humming is characterized by a low frequency (50-80Hz), steady, narrowband electrical noise added to the signal. This defect is very
+common in analog recording and mixing gear, as it is in the neighbourhood of the frequency of the electrical supply (50-60Hz). 
+The authors use an algorithm proposed by Brandt and Bitzer in their paper “Automatic detection of hum in audio signals” where they 
+propose an approach based on the computation of measuring the steadiness of the frequency bins on 10-30 seconds audio segments.\\
+\subsection{Click defects}
+Click defects are included in the previously mentioned digital audio artifacts. They are characterized by impulsive noise that 
+can come from multiple sources such as plosive sounds or codification errors. To detects this artifacts, after LPC algorithms 
+are used to define the stationary part of the waveform, this is subtracted from the audio file to then compute a peak thresholding 
+of the output of a matched filter of that error signal.\\
+\subsection{Clipping defects}
+Clipping is a phenomenon given by an audio waveform exceeding the dynamic range of the media, it being the digital or the analog 
+domain. However, we are focusing on the digital domain, where clipping is perceived when surpassed the [-1, 1] range of the values. 
+This can be originated from DAC not having enough dynamic range to represent the signal that is passed as an input or because of badly 
+executed limiting in mastering. \\
+The method proposed by the authors is detecting streams of adjacent samples that have very little variance between them and computing 
+an energy threshold in order to avoid silence to be detected as clipping.\\
+
+
+\newpage
+
+
