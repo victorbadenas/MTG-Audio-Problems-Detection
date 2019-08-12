@@ -3,7 +3,7 @@ import numpy as np
 
 
 def essHumDetector(x: list, Q0=.1, Q1=.55, frameSize=1024, hopSize=512, detectionThreshold=1,
-                   sr=44100, minLength=None, percentageThrehold=80):
+                   sr=44100, minLength=None, percentageThrehold=80, timeWindow=None, minimumDuration=None, timeContinuity=None, numberHarmonics=None):
     """Computes the hum detection in x and computes a value over one of the path of the audio that has hum noise.
     
     Args:
@@ -25,13 +25,20 @@ def essHumDetector(x: list, Q0=.1, Q1=.55, frameSize=1024, hopSize=512, detectio
     # print(len(x))
     frameSize = frameSize / sr
     hopSize = hopSize / sr
-    minimumDuration = frameSize / 4
-    timeWindow = frameSize
+    if not minimumDuration:
+        minimumDuration = frameSize / 4
+    if not timeWindow:
+        timeWindow = frameSize
+    if not timeContinuity:
+        timeContinuity = 10.0
+    if not numberHarmonics:
+        numberHarmonics = 1
     # print(minimumDuration, frameSize)
-    _, _, _, starts, ends = HumDetector(Q0=Q0, Q1=Q1, frameSize=frameSize, hopSize=hopSize,
+    if timeContinuity:
+        _, _, _, starts, ends = HumDetector(Q0=Q0, Q1=Q1, frameSize=frameSize, hopSize=hopSize,
                                         detectionThreshold=detectionThreshold, sampleRate=sr,
-                                        minimumDuration=minimumDuration, timeWindow=timeWindow)(x)
-
+                                        minimumDuration=minimumDuration, timeWindow=timeWindow, 
+                                        timeContinuity=timeContinuity, numberHarmonics=numberHarmonics)(x)
     # print(starts,ends)
 
     dur = []
