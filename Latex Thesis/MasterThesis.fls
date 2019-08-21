@@ -1,9 +1,9 @@
-PWD /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis
+PWD /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis
 INPUT /usr/local/texlive/2018/texmf.cnf
 INPUT /usr/local/texlive/2018/texmf-dist/web2c/texmf.cnf
 INPUT /usr/local/texlive/2018/texmf-var/web2c/pdftex/pdflatex.fmt
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/MasterThesis.tex
-OUTPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/MasterThesis.log
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/MasterThesis.tex
+OUTPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/MasterThesis.log
 INPUT /usr/local/texlive/2018/texmf-dist/tex/latex/base/report.cls
 INPUT /usr/local/texlive/2018/texmf-dist/tex/latex/base/report.cls
 INPUT /usr/local/texlive/2018/texmf-dist/tex/latex/base/size12.clo
@@ -103,32 +103,32 @@ INPUT /usr/local/texlive/2018/texmf-dist/tex/latex/tocbibind/tocbibind.sty
 INPUT /usr/local/texlive/2018/texmf-dist/tex/latex/tocbibind/tocbibind.sty
 INPUT /usr/local/texlive/2018/texmf-dist/tex/latex/titlesec/titlesec.sty
 INPUT /usr/local/texlive/2018/texmf-dist/tex/latex/titlesec/titlesec.sty
-OUTPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/thesis.preamble.aux
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/thesis.preamble.tex
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/thesis.preamble.tex
+OUTPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/thesis.preamble.aux
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/thesis.preamble.tex
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/thesis.preamble.tex
 INPUT /usr/local/texlive/2018/texmf-dist/tex/latex/tools/verbatim.sty
 INPUT /usr/local/texlive/2018/texmf-dist/tex/latex/tools/verbatim.sty
 INPUT /usr/local/texlive/2018/texmf-dist/tex/latex/base/latexsym.sty
 INPUT /usr/local/texlive/2018/texmf-dist/tex/latex/base/latexsym.sty
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/mathchars.sty
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/mathchars.sty
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/mathchars.sty
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/mathchars.sty
 INPUT /usr/local/texlive/2018/texmf-dist/tex/latex/blindtext/blindtext.sty
 INPUT /usr/local/texlive/2018/texmf-dist/tex/latex/blindtext/blindtext.sty
 INPUT /usr/local/texlive/2018/texmf-dist/tex/latex/tools/xspace.sty
 INPUT /usr/local/texlive/2018/texmf-dist/tex/latex/tools/xspace.sty
 INPUT /usr/local/texlive/2018/texmf-dist/tex/latex/float/float.sty
 INPUT /usr/local/texlive/2018/texmf-dist/tex/latex/float/float.sty
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/blocked.sty
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/blocked.sty
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/uhead.sty
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/uhead.sty
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/boxit.sty
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/boxit.sty
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/icthesis.sty
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/icthesis.sty
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/MasterThesis.aux
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/MasterThesis.aux
-OUTPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/MasterThesis.aux
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/blocked.sty
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/blocked.sty
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/uhead.sty
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/uhead.sty
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/boxit.sty
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/boxit.sty
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/icthesis.sty
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/icthesis.sty
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/MasterThesis.aux
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/MasterThesis.aux
+OUTPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/MasterThesis.aux
 INPUT /usr/local/texlive/2018/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
 INPUT /usr/local/texlive/2018/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
 INPUT /usr/local/texlive/2018/texmf-dist/tex/latex/oberdiek/epstopdf-base.sty
@@ -145,28 +145,28 @@ INPUT /usr/local/texlive/2018/texmf-dist/tex/latex/hyperref/nameref.sty
 INPUT /usr/local/texlive/2018/texmf-dist/tex/latex/hyperref/nameref.sty
 INPUT /usr/local/texlive/2018/texmf-dist/tex/generic/oberdiek/gettitlestring.sty
 INPUT /usr/local/texlive/2018/texmf-dist/tex/generic/oberdiek/gettitlestring.sty
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/MasterThesis.out
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/MasterThesis.out
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/MasterThesis.out
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/MasterThesis.out
-OUTPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/MasterThesis.pdf
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/MasterThesis.out
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/MasterThesis.out
-OUTPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/MasterThesis.out
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/MasterThesis.out
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/MasterThesis.out
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/MasterThesis.out
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/MasterThesis.out
+OUTPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/MasterThesis.pdf
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/MasterThesis.out
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/MasterThesis.out
+OUTPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/MasterThesis.out
 INPUT /usr/local/texlive/2018/texmf-dist/fonts/tfm/jknappen/ec/ecrm1728.tfm
 INPUT /usr/local/texlive/2018/texmf-dist/fonts/tfm/jknappen/ec/ecrm1440.tfm
 INPUT /usr/local/texlive/2018/texmf-dist/fonts/tfm/jknappen/ec/ecbx1200.tfm
 INPUT /usr/local/texlive/2018/texmf-dist/fonts/tfm/jknappen/ec/ecbx2488.tfm
 INPUT /usr/local/texlive/2018/texmf-dist/fonts/tfm/jknappen/ec/ecbx1440.tfm
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/LogoPompeuFabra.jpg
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/LogoPompeuFabra.jpg
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/LogoPompeuFabra.jpg
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/LogoPompeuFabra.jpg
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/LogoPompeuFabra.jpg
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/LogoPompeuFabra.jpg
 INPUT /usr/local/texlive/2018/texmf-var/fonts/map/pdftex/updmap/pdftex.map
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/LogoPompeuFabra.jpg
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/LogoPompeuFabra.jpg
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/LogoPompeuFabra.jpg
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/LogoPompeuFabra.jpg
 INPUT /usr/local/texlive/2018/texmf-dist/fonts/tfm/jknappen/ec/ecrm2488.tfm
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/MasterThesis.toc
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/MasterThesis.toc
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/MasterThesis.toc
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/MasterThesis.toc
 INPUT /usr/local/texlive/2018/texmf-dist/fonts/tfm/public/cm/cmr8.tfm
 INPUT /usr/local/texlive/2018/texmf-dist/fonts/tfm/public/cm/cmr6.tfm
 INPUT /usr/local/texlive/2018/texmf-dist/fonts/tfm/public/cm/cmmi12.tfm
@@ -183,92 +183,92 @@ INPUT /usr/local/texlive/2018/texmf-dist/tex/latex/base/ulasy.fd
 INPUT /usr/local/texlive/2018/texmf-dist/fonts/tfm/public/latex-fonts/lasy10.tfm
 INPUT /usr/local/texlive/2018/texmf-dist/fonts/tfm/public/latex-fonts/lasy8.tfm
 INPUT /usr/local/texlive/2018/texmf-dist/fonts/tfm/public/latex-fonts/lasy6.tfm
-OUTPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/MasterThesis.toc
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/dedication/dedication.tex
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/dedication/dedication.tex
+OUTPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/MasterThesis.toc
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/dedication/dedication.tex
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/dedication/dedication.tex
 INPUT /usr/local/texlive/2018/texmf-dist/fonts/tfm/jknappen/ec/ecrm1095.tfm
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/acknowledgements/acknowledgements.tex
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/acknowledgements/acknowledgements.tex
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/acknowledgements/acknowledgements.tex
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/acknowledgements/acknowledgements.tex
 INPUT /usr/local/texlive/2018/texmf-dist/tex/latex/base/omscmr.fd
 INPUT /usr/local/texlive/2018/texmf-dist/tex/latex/base/omscmr.fd
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/abstract/abstract.tex
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/abstract/abstract.tex
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/introduction/introduction.tex
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/introduction/introduction.tex
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/abstract/abstract.tex
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/abstract/abstract.tex
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/introduction/introduction.tex
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/introduction/introduction.tex
 INPUT /usr/local/texlive/2018/texmf-dist/fonts/tfm/jknappen/ec/ecbx1728.tfm
 INPUT /usr/local/texlive/2018/texmf-dist/fonts/tfm/jknappen/ec/ecsl1200.tfm
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/stateoftheart/stateoftheart.tex
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/stateoftheart/stateoftheart.tex
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/methodology/methodology.tex
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/methodology/methodology.tex
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/BW_Flowchart.png
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/BW_Flowchart.png
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/BW_Flowchart.png
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/correlation.png
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/correlation.png
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/correlation.png
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/results/results.tex
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/results/results.tex
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/HumTimeWindow.png
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/HumTimeWindow.png
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/HumTimeWindow.png
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/HumminimumDuration.png
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/HumminimumDuration.png
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/HumminimumDuration.png
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/HumnumberHarmonics.png
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/HumnumberHarmonics.png
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/HumnumberHarmonics.png
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/HumtimeContinuity.png
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/HumtimeContinuity.png
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/HumtimeContinuity.png
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/clicksdetectionThreshold.png
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/clicksdetectionThreshold.png
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/clicksdetectionThreshold.png
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/clicksorder.png
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/clicksorder.png
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/clicksorder.png
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/clickspowerEstimationThreshold.png
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/clickspowerEstimationThreshold.png
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/clickspowerEstimationThreshold.png
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/clickssilenceThreshold.png
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/clickssilenceThreshold.png
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/clickssilenceThreshold.png
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/noiseealpha.png
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/noiseealpha.png
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/noiseealpha.png
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/noisethreshold.png
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/noisethreshold.png
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/noisethreshold.png
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/satDifferentialThreshold.png
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/satDifferentialThreshold.png
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/satDifferentialThreshold.png
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/satEnergyThreshold.png
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/satEnergyThreshold.png
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/satEnergyThreshold.png
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/satMinimumDuration.png
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/satMinimumDuration.png
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/satMinimumDuration.png
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/silenceframeSize.png
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/silenceframeSize.png
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/silenceframeSize.png
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/silencethreshold.png
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/silencethreshold.png
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/silencethreshold.png
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/discussion/discussion.tex
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/discussion/discussion.tex
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/MasterThesis.lof
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/MasterThesis.lof
-OUTPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/MasterThesis.lof
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/MasterThesis.lot
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/MasterThesis.lot
-OUTPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/MasterThesis.lot
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/MasterThesis.bbl
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/MasterThesis.bbl
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/appendix/appendix.tex
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/appendix/appendix.tex
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/MasterThesis.aux
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/MasterThesis.out
-INPUT /Users/victor/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/MasterThesis.out
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/stateoftheart/stateoftheart.tex
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/stateoftheart/stateoftheart.tex
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/methodology/methodology.tex
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/methodology/methodology.tex
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/BW_Flowchart.png
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/BW_Flowchart.png
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/BW_Flowchart.png
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/correlation.png
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/correlation.png
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/correlation.png
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/results/results.tex
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/results/results.tex
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/HumTimeWindow.png
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/HumTimeWindow.png
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/HumTimeWindow.png
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/HumminimumDuration.png
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/HumminimumDuration.png
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/HumminimumDuration.png
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/HumnumberHarmonics.png
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/HumnumberHarmonics.png
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/HumnumberHarmonics.png
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/HumtimeContinuity.png
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/HumtimeContinuity.png
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/HumtimeContinuity.png
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/clicksdetectionThreshold.png
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/clicksdetectionThreshold.png
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/clicksdetectionThreshold.png
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/clicksorder.png
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/clicksorder.png
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/clicksorder.png
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/clickspowerEstimationThreshold.png
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/clickspowerEstimationThreshold.png
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/clickspowerEstimationThreshold.png
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/clickssilenceThreshold.png
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/clickssilenceThreshold.png
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/clickssilenceThreshold.png
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/noiseealpha.png
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/noiseealpha.png
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/noiseealpha.png
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/noisethreshold.png
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/noisethreshold.png
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/noisethreshold.png
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/satDifferentialThreshold.png
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/satDifferentialThreshold.png
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/satDifferentialThreshold.png
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/satEnergyThreshold.png
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/satEnergyThreshold.png
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/satEnergyThreshold.png
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/satMinimumDuration.png
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/satMinimumDuration.png
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/satMinimumDuration.png
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/silenceframeSize.png
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/silenceframeSize.png
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/silenceframeSize.png
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/silencethreshold.png
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/silencethreshold.png
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/Figures/silencethreshold.png
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/discussion/discussion.tex
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/discussion/discussion.tex
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/MasterThesis.lof
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/MasterThesis.lof
+OUTPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/MasterThesis.lof
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/MasterThesis.lot
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/MasterThesis.lot
+OUTPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/MasterThesis.lot
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/MasterThesis.bbl
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/MasterThesis.bbl
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/appendix/appendix.tex
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/appendix/appendix.tex
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/MasterThesis.aux
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/MasterThesis.out
+INPUT /Users/victorbadenascrespo/Documents/Projects/InProgress/MTG-Audio-Problems-Detection/Latex Thesis/MasterThesis.out
 INPUT /usr/local/texlive/2018/texmf-dist/fonts/enc/dvips/cm-super/cm-super-t1.enc
 INPUT /usr/local/texlive/2018/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb
 INPUT /usr/local/texlive/2018/texmf-dist/fonts/type1/public/amsfonts/cmextra/cmex8.pfb
