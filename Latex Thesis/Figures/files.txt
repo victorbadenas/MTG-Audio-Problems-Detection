@@ -1,0 +1,16 @@
+HumTimeWindow.png
+HumminimumDuration.png
+HumnumberHarmonics.png
+HumtimeContinuity.png
+clicksdetectionThreshold.png
+clicksorder.png
+clickspowerEstimationThreshold.png
+clickssilenceThreshold.png
+correlation.png
+noiseealpha.png
+noisethreshold.png
+satDifferentialThreshold.png
+satEnergyThreshold.png
+satMinimumDuration.png
+silenceframeSize.png
+silencethreshold.png
