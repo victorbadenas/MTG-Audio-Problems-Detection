@@ -38,12 +38,12 @@ class gridSearch():
         self.groundTruth = pd.read_csv(groundTruthPath, index_col="Filename")
 
     def __call__(self):
-        # self.saturation()
-        # self.bandwidth()
-        # self.lowsnr()
-        # self.hum()
-        # self.clicks()
-        # self.silence()
+        self.saturation()
+        self.bandwidth()
+        self.lowsnr()
+        self.hum()
+        self.clicks()
+        self.silence()
         self.noisebursts()
 
     def saturation(self):
