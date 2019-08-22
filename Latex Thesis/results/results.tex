@@ -1,14 +1,10 @@
 
 \chapter{Results}
 
-The algorithms have been evaluated with 1120 mono sounds from the test dataset for the Kaggle Audio tagging competition created by \\
-the MTG and Freesound. The test set for the dataset is an accurate representation of the content of the whole dataset for the competition. \\
-The dataset has been manually anotated by the author using the script evaluation.py in the Evaluation folder on thew github repository. \\
-The evaluation was carried by annotating the existance of the following problems: Hum, Clicks, Noise Bursts, Saturation and Silence. \\
-Other algorithms that had to be evaluated were Phase issues. However, as the dataset is formed exclusively of mono files, the algorithms were not properly evaluated.
+The algorithms have been evaluated with 1120 mono sounds from the test dataset for the Kaggle Audio tagging competition created by the MTG and Freesound. The test set for the dataset is an accurate representation of the content of the whole dataset for the competition. The dataset has been manually anotated by the author using the script evaluation.py in the Evaluation folder on thew github repository. The evaluation was carried by annotating the existance of the following problems: Hum, Clicks, Noise Bursts, Saturation and Silence. Other algorithms that had to be evaluated were Phase issues. However, as the dataset is formed exclusively of mono files, the algorithms were not properly evaluated.
 
-The parameter values evaluated for each algorithms will be evaluated with 3 measures, precision \ref{eqn:precision}, recall \ref{eqn:recall} and F_{0.5} score \ref{eqn:FScore}.
-a value of \beta=0.5 was chosen to weight the score in favor of the precision score.
+The parameter values evaluated for each algorithms will be evaluated with 3 measures: precision \ref{eqn:precision}, recall \ref{eqn:recall} and $F_{0.5}$ score \ref{eqn:FScore}. A value of $\beta=0.5$ was chosen to weight the score in favor of the precision score.
+
 \begin{equation}\label{eqn:precision}
 	Precision = \frac{TruePositive}{TruePositive + FalsePositive}
 \end{equation}
@@ -16,106 +12,111 @@ a value of \beta=0.5 was chosen to weight the score in favor of the precision sc
 	Recall = \frac{TruePositive}{TruePositive + FalseNegative}
 \end{equation}
 \begin{equation}\label{eqn:FScore}
-	F_{\beta} = (1+\beta^2)\frac{precision·recall}{\beta^2·precision + recall}, F_{0.5} = 1.25\frac{precision·recall}{0.25·precision + recall}
+	F_{\beta} = (1+\beta^2)\frac{precision \cdot recall}{\beta^2 \cdot precision + recall}, F_{0.5} = 1.25\frac{precision \cdot recall}{0.25 \cdot precision + recall}
 \end{equation}
 
 \section{Hum detection evaluation}
-Four parameters of the essentia Hum algorithm were considered in the evaluation: TimeWindow, minimumDuration, NumberofHarmonics and timeContinuity. \\
-The timeWindow parameter is a measure of the analysis time to use in the Hum estimation in s. The parameter was evaluated for the values: [0.1, 0.3, 0.5, 1, 3, 5] \\
-as they seemed a good sweep of values for the parameter. However, as it can be seen in the results obtained in \ref{fig:humTimeWindow}, they are not satisfactory, as \\
-the values remain constant at 0 and 1 which, inspecting the equations and knowing that a 0/0 indetermination will be considered with a value of 1 as a result, can be extrapolated that: \\
-a recall score of 0 means a TruePositive count of 0, and then, a precision value of 1 with a TruePositive count of 0 means that the denominator also is 0 and we can conclude \\
-that FalsePositive values are also 0 which means that all audio files were detected as Healthy and by manual revision it can be seen that there are audio files that have hum \\
-so this parameter is not relevant to the detection.
+Four parameters of the essentia Hum algorithm were considered in the evaluation: TimeWindow, minimumDuration, NumberofHarmonics and timeContinuity. The timeWindow parameter is a measure of the analysis time to use in the Hum estimation in s. The parameter was evaluated for the values: [0.1, 0.3, 0.5, 1, 3, 5] as they seemed a good sweep of values for the parameter. However, as it can be seen in the results obtained in \ref{fig:humTimeWindow}, they are not satisfactory, as the values remain constant at 0 and 1 which, inspecting the equations and knowing that a 0/0 indetermination will be considered with a value of 1 as a result, can be extrapolated that: a recall score of 0 means a TruePositive count of 0, and then, a precision value of 1 with a TruePositive count of 0 means that the denominator also is 0 and we can conclude that FalsePositive values are also 0 which means that all audio files were detected as Healthy and by manual revision it can be seen that there are audio files that have hum so this parameter is not relevant to the detection.
 
-\begin{figure}[!ht]
-	\includegraphics[clip,width=\columnwidth]{Figures/HumTimeWindow.png}% 
+\begin{figure}[H]
+	\centering
+	\includegraphics[clip, width=0.7\columnwidth]{Figures/HumTimeWindow.png}% 
 	\caption{timeWindow parameter sweep results (accuracy, F score and recall)}
 	\label{fig:humTimeWindow}
 \end{figure}
 
-The next parameter to be evaluated is 
+The next parameter to be evaluated is minimumDuration, which is the minimum time span for which the hum is detected. The parameter was sweeped through the range: [0.01, 0.07, 0.1, 0.3, 0.5, 1, 3, 5]. However, similar results to the previous ones were obtained, as can be seen in \ref{fig:humminimumDuration}.
 
-\begin{figure}[!ht]
-	\includegraphics[clip,width=\columnwidth]{Figures/HumminimumDuration.png}% 
+\begin{figure}[H]
+	\centering
+	\includegraphics[clip,width=0.7\columnwidth]{Figures/HumminimumDuration.png}% 
 	\caption{minimumDuration parameter sweep results (accuracy, F score and recall)}
 	\label{fig:humminimumDuration}
 \end{figure}
 
-\begin{figure}[!ht]
-	\includegraphics[clip,width=\columnwidth]{Figures/HumnumberHarmonics.png}% 
+The next parameter to be evaluated is NumberofHarmonics, number of harmonic components for which the algorithm will look for it to consider a humming frequency. The parameter was sweeped through the range: [1, 2, 3, 4, 5]. However, similar results to the previous ones were obtained, as can be seen in \ref{fig:humnumberHarmonics}.
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[clip,width=0.7\columnwidth]{Figures/HumnumberHarmonics.png}% 
 	\caption{numberHarmonics parameter sweep results (accuracy, F score and recall)}
 	\label{fig:humnumberHarmonics}
 \end{figure}
 
-\begin{figure}[!ht]
-	\includegraphics[clip,width=\columnwidth]{Figures/HumtimeContinuity.png}% 
+The next parameter to be evaluated is timeContinuity, the minimum time for a humming frequency to be present to be detected. The parameter was sweeped through the range: [0.1, 0.3, 0.5, 1, 3, 5]. However, similar results to the previous ones were obtained, as can be seen in \ref{fig:humtimeContinuity}.
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[clip,width=0.7\columnwidth]{Figures/HumtimeContinuity.png}% 
 	\caption{timeContinuity parameter sweep results (accuracy, F score and recall)}
 	\label{fig:humtimeContinuity}
 \end{figure}
 
-\begin{figure}[!ht]
-	\includegraphics[clip,width=\columnwidth]{Figures/clicksdetectionThreshold.png}% 
+\section{Clicks detection evaluation}
+Four parameters for the essentia clicks detector algorithm were evaluated: detectionThreshold, order, powerEstimationThreshold, silenceThreshold. 
+
+\begin{figure}[H]
+	\includegraphics[clip,width=0.7\columnwidth]{Figures/clicksdetectionThreshold.png}% 
 	\caption{detectionThreshold parameter sweep results (accuracy, F score and recall)}
 	\label{fig:clicksdetectionThreshold}
 \end{figure}
 
-\begin{figure}[!ht]
-	\includegraphics[clip,width=\columnwidth]{Figures/clicksorder.png}% 
+\begin{figure}[H]
+	\includegraphics[clip,width=0.7\columnwidth]{Figures/clicksorder.png}% 
 	\caption{order parameter sweep results (accuracy, F score and recall)}
 	\label{fig:clicksorder}
 \end{figure}
 
-\begin{figure}[!ht]
-	\includegraphics[clip,width=\columnwidth]{Figures/clickspowerEstimationThreshold.png}% 
+\begin{figure}[H]
+	\includegraphics[clip,width=0.7\columnwidth]{Figures/clickspowerEstimationThreshold.png}% 
 	\caption{powerEstimationThreshold parameter sweep results (accuracy, F score and recall)}
 	\label{fig:clickspowerEstimationThreshold}
 \end{figure}
 
-\begin{figure}[!ht]
-	\includegraphics[clip,width=\columnwidth]{Figures/clickssilenceThreshold.png}% 
+\begin{figure}[H]
+	\includegraphics[clip,width=0.7\columnwidth]{Figures/clickssilenceThreshold.png}% 
 	\caption{silenceThreshold parameter sweep results (accuracy, F score and recall)}
 	\label{fig:clickssilenceThreshold}
 \end{figure}
 
-\begin{figure}[!ht]
-	\includegraphics[clip,width=\columnwidth]{Figures/noiseealpha.png}% 
+\begin{figure}[H]
+	\includegraphics[clip,width=0.7\columnwidth]{Figures/noiseealpha.png}% 
 	\caption{alpha parameter sweep results (accuracy, F score and recall)}
 	\label{fig:noiseealpha}
 \end{figure}
 
-\begin{figure}[!ht]
-	\includegraphics[clip,width=\columnwidth]{Figures/noisethreshold.png}% 
+\begin{figure}[H]
+	\includegraphics[clip,width=0.7\columnwidth]{Figures/noisethreshold.png}% 
 	\caption{threshold parameter sweep results (accuracy, F score and recall)}
 	\label{fig:noisethreshold}
 \end{figure}
 
-\begin{figure}[!ht]
-	\includegraphics[clip,width=\columnwidth]{Figures/satDifferentialThreshold.png}% 
+\begin{figure}[H]
+	\includegraphics[clip,width=0.7\columnwidth]{Figures/satDifferentialThreshold.png}% 
 	\caption{differentialThreshold parameter sweep results (accuracy, F score and recall)}
 	\label{fig:satDifferentialThreshold}
 \end{figure}
 
-\begin{figure}[!ht]
-	\includegraphics[clip,width=\columnwidth]{Figures/satEnergyThreshold.png}% 
+\begin{figure}[H]
+	\includegraphics[clip,width=0.7\columnwidth]{Figures/satEnergyThreshold.png}% 
 	\caption{energyThreshold parameter sweep results (accuracy, F score and recall)}
 	\label{fig:satEnergyThreshold}
 \end{figure}
 
-\begin{figure}[!ht]
-	\includegraphics[clip,width=\columnwidth]{Figures/satMinimumDuration.png}% 
+\begin{figure}[H]
+	\includegraphics[clip,width=0.7\columnwidth]{Figures/satMinimumDuration.png}% 
 	\caption{minimumDuration parameter sweep results (accuracy, F score and recall)}
 	\label{fig:satMinimumDuration}
 \end{figure}
 
-\begin{figure}[!ht]
-	\includegraphics[clip,width=\columnwidth]{Figures/silenceframeSize.png}% 
+\begin{figure}[H]
+	\includegraphics[clip,width=0.7\columnwidth]{Figures/silenceframeSize.png}% 
 	\caption{frameSize parameter sweep results (accuracy, F score and recall)}
 	\label{fig:silenceframeSize}
 \end{figure}
 
-\begin{figure}[!ht]
-	\includegraphics[clip,width=\columnwidth]{Figures/silencethreshold.png}% 
+\begin{figure}[H]
+	\includegraphics[clip,width=0.7\columnwidth]{Figures/silencethreshold.png}% 
 	\caption{threshold parameter sweep results (accuracy, F score and recall)}
 	\label{fig:silencethreshold}
 \end{figure}

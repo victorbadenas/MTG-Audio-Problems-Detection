@@ -8,9 +8,10 @@ For the evaluation and creation of the algorithms, the language of python3 was u
 
 The bit depth detection algorithm proposed works by finding the discrepancy between the value in the header of the Wave container file and the 
 extracted information from the data in it. \\
-The byte rate is obtained from the bytes 28 to 31 of the header and then are converted following \ref{eqn:BitRate}.
-\begin{equation}\label{eqn:BitRate}
+The byte rate is obtained from the bytes 28 to 31 of the header and then are converted following \ref{eq:BitRate}.
+\begin{equation}
 BR=\frac{b}{8}*fs=B*fs
+\label{eq:BitRate}
 \end{equation} 
 Where BR is the bit rate, b is the number of bits with which the signal is coded, B is the number of bytes and fs is the sampling frequency or 
 sampling rate. From there, the first value is obtained.\\
