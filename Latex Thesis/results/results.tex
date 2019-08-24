@@ -53,7 +53,7 @@ The next parameter to be evaluated is timeContinuity, the minimum time for a hum
 \end{figure}
 
 \section{Clicks detection evaluation}
-Four parameters for the essentia clicks detector algorithm were evaluated: detectionThreshold, order, powerEstimationThreshold, silenceThreshold. 
+Four parameters for the essentia clicks detector algorithm were evaluated: detectionThreshold, order, powerEstimationThreshold, silenceThreshold. The first parameter is detectionThreshold, which is based on the instant power of the noisy excitation signal plus detectionThreshold dBs. detectionThreshold parameter was swept in the range of values: [0, 5, 10, 15, 20, 25, 30, 35]. The results are as seen in \ref{fig:clicksdetectionThreshold}. As seen in the figure, the best results (maximum of the Fscore result) were obtained for a value of 25dB and the obtained Fscore obtained is about a 0.35.
 
 \begin{figure}[H]
 	\includegraphics[clip,width=0.7\columnwidth]{Figures/clicksdetectionThreshold.png}% 
@@ -61,11 +61,15 @@ Four parameters for the essentia clicks detector algorithm were evaluated: detec
 	\label{fig:clicksdetectionThreshold}
 \end{figure}
 
+The next parameter to be evaluated is order, which is the number of LPC coefficients to use. The parameter was evaluated for the values: [2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 38]. The maximum Fscore value was obtained for a value of 24 and the result was a value of over 0.4.
+
 \begin{figure}[H]
 	\includegraphics[clip,width=0.7\columnwidth]{Figures/clicksorder.png}% 
 	\caption{order parameter sweep results (accuracy, F score and recall)}
 	\label{fig:clicksorder}
 \end{figure}
+
+The next parameter to be evaluated is powerEstimationThreshold. In the algorithm, the noisy excitation is clipped to powerEstimationThreshold times its median. The parameter was evaluated for the values: [2, 4, 6, 8, 10, 12, 14]. The maximum Fscore value was obtained for a value of 10 and the result was a value of over 0.35.
 
 \begin{figure}[H]
 	\includegraphics[clip,width=0.7\columnwidth]{Figures/clickspowerEstimationThreshold.png}% 
@@ -73,11 +77,16 @@ Four parameters for the essentia clicks detector algorithm were evaluated: detec
 	\label{fig:clickspowerEstimationThreshold}
 \end{figure}
 
+The next parameter to be evaluated is silenceThreshold. The value represents the threshold to skip silent frames. The parameter was evaluated for the values: [-70, -60, -50, -40, -30, -20, -10]. The maximum Fscore value was obtained for a value of -60 and the result was a value of over 0.35.
+
 \begin{figure}[H]
 	\includegraphics[clip,width=0.7\columnwidth]{Figures/clickssilenceThreshold.png}% 
 	\caption{silenceThreshold parameter sweep results (accuracy, F score and recall)}
 	\label{fig:clickssilenceThreshold}
 \end{figure}
+
+\section{Noise bursts detection evaluation}
+For the noise bursts detection algorithm two values were sweeped: alpha value and threshold. The alpha value is the alpha value for Exponential Moving Average threshold estimation. The valuye was sweeped for the range: [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9] and the best value of Fscore was achieved for 0.1.
 
 \begin{figure}[H]
 	\includegraphics[clip,width=0.7\columnwidth]{Figures/noiseealpha.png}% 
@@ -85,11 +94,16 @@ Four parameters for the essentia clicks detector algorithm were evaluated: detec
 	\label{fig:noiseealpha}
 \end{figure}
 
+The threshold value represent the threshold to skip silent frames. The parameter was swept for the following values: [-10, -8, -6, -4, -2, 0, 2, 4, 6, 8, 10] and the best results were obtained for the value of 4 giving an accuracy of 0.3.
+
 \begin{figure}[H]
 	\includegraphics[clip,width=0.7\columnwidth]{Figures/noisethreshold.png}% 
 	\caption{threshold parameter sweep results (accuracy, F score and recall)}
 	\label{fig:noisethreshold}
 \end{figure}
+
+\section{Saturation detection evaluation}
+For the saturation evaluation, the parameters differentialThreshold, energyThreshold and minimumDuration. The first parameter represents minimum difference between contiguous samples of the salturated regions. The parameter was swept for the values: [0.001, 0.005, 0.01, 0.05, 0.1, 0.5, 1, 5, 10]. And the best results in Fscore were obtained for high values such as 5 or 10, but, if precision was to be priotitized, the smallest value wouyld give the best results. 
 
 \begin{figure}[H]
 	\includegraphics[clip,width=0.7\columnwidth]{Figures/satDifferentialThreshold.png}% 
@@ -97,17 +111,24 @@ Four parameters for the essentia clicks detector algorithm were evaluated: detec
 	\label{fig:satDifferentialThreshold}
 \end{figure}
 
+The second parameter is energyThreshold which is the minimum energy for the algorithm to assume a region as saturated. The value was swept for the values: [-30, -20, -10, -7, -5, -3, -1, -0.01] and the best Fscore results were obtainesd for -5 dB.
+
 \begin{figure}[H]
 	\includegraphics[clip,width=0.7\columnwidth]{Figures/satEnergyThreshold.png}% 
 	\caption{energyThreshold parameter sweep results (accuracy, F score and recall)}
 	\label{fig:satEnergyThreshold}
 \end{figure}
 
+The last parameter is minimumDuration, which is the time threshold for the algorithm to detect a saturated region. The parameter was swept for the values: [0.001, 0.005, 0.01, 0.05, 0.1, 0.5, 1] and the best results were obtained for 0.001.
+
 \begin{figure}[H]
 	\includegraphics[clip,width=0.7\columnwidth]{Figures/satMinimumDuration.png}% 
 	\caption{minimumDuration parameter sweep results (accuracy, F score and recall)}
 	\label{fig:satMinimumDuration}
 \end{figure}
+
+\section{Silence detection evaluation}
+For the silence detection algorithm, two parameters were evaluated: frameSize and threshold which for both we had simiar results as they were obtained in hum detection meaning that no audios were detected as having an issue.
 
 \begin{figure}[H]
 	\includegraphics[clip,width=0.7\columnwidth]{Figures/silenceframeSize.png}% 

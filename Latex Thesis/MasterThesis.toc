@@ -15,10 +15,10 @@
 \contentsline {chapter}{\numberline {4}Results}{12}{chapter.4}
 \contentsline {section}{\numberline {4.1}Hum detection evaluation}{13}{section.4.1}
 \contentsline {section}{\numberline {4.2}Clicks detection evaluation}{16}{section.4.2}
-\contentsline {chapter}{\numberline {5}Discussion}{22}{chapter.5}
-\contentsline {section}{\numberline {5.1}Discussion}{22}{section.5.1}
-\contentsline {section}{\numberline {5.2}Conclusions}{22}{section.5.2}
-\contentsline {chapter}{List of Figures}{23}{section*.1}
-\contentsline {chapter}{List of Tables}{24}{section*.2}
-\contentsline {chapter}{\numberline {A}First Appendix}{25}{chapter.1}
-\contentsline {chapter}{\numberline {B}Second Appendix}{26}{chapter.2}
+\contentsline {section}{\numberline {4.3}Noise bursts detection evaluation}{19}{section.4.3}
+\contentsline {section}{\numberline {4.4}Saturation detection evaluation}{21}{section.4.4}
+\contentsline {section}{\numberline {4.5}Silence detection evaluation}{23}{section.4.5}
+\contentsline {chapter}{\numberline {5}Conclusions}{24}{chapter.5}
+\contentsline {chapter}{List of Figures}{25}{section*.1}
+\contentsline {chapter}{List of Tables}{26}{section*.2}
+\contentsline {chapter}{Bibliography}{27}{chapter*.3}

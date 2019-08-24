@@ -8,17 +8,15 @@
 \contentsline {figure}{\numberline {4}{\ignorespaces minimumDuration parameter sweep results (accuracy, F score and recall)}}{14}{figure.4.4}
 \contentsline {figure}{\numberline {5}{\ignorespaces numberHarmonics parameter sweep results (accuracy, F score and recall)}}{15}{figure.4.5}
 \contentsline {figure}{\numberline {6}{\ignorespaces timeContinuity parameter sweep results (accuracy, F score and recall)}}{16}{figure.4.6}
-\contentsline {figure}{\numberline {7}{\ignorespaces detectionThreshold parameter sweep results (accuracy, F score and recall)}}{16}{figure.4.7}
+\contentsline {figure}{\numberline {7}{\ignorespaces detectionThreshold parameter sweep results (accuracy, F score and recall)}}{17}{figure.4.7}
 \contentsline {figure}{\numberline {8}{\ignorespaces order parameter sweep results (accuracy, F score and recall)}}{17}{figure.4.8}
-\contentsline {figure}{\numberline {9}{\ignorespaces powerEstimationThreshold parameter sweep results (accuracy, F score and recall)}}{17}{figure.4.9}
-\contentsline {figure}{\numberline {10}{\ignorespaces silenceThreshold parameter sweep results (accuracy, F score and recall)}}{18}{figure.4.10}
-\contentsline {figure}{\numberline {11}{\ignorespaces alpha parameter sweep results (accuracy, F score and recall)}}{18}{figure.4.11}
-\contentsline {figure}{\numberline {12}{\ignorespaces threshold parameter sweep results (accuracy, F score and recall)}}{19}{figure.4.12}
-\contentsline {figure}{\numberline {13}{\ignorespaces differentialThreshold parameter sweep results (accuracy, F score and recall)}}{19}{figure.4.13}
-\contentsline {figure}{\numberline {14}{\ignorespaces energyThreshold parameter sweep results (accuracy, F score and recall)}}{20}{figure.4.14}
-\contentsline {figure}{\numberline {15}{\ignorespaces minimumDuration parameter sweep results (accuracy, F score and recall)}}{20}{figure.4.15}
-\contentsline {figure}{\numberline {16}{\ignorespaces frameSize parameter sweep results (accuracy, F score and recall)}}{21}{figure.4.16}
-\contentsline {figure}{\numberline {17}{\ignorespaces threshold parameter sweep results (accuracy, F score and recall)}}{21}{figure.4.17}
-\addvspace {10\p@ }
-\addvspace {10\p@ }
+\contentsline {figure}{\numberline {9}{\ignorespaces powerEstimationThreshold parameter sweep results (accuracy, F score and recall)}}{18}{figure.4.9}
+\contentsline {figure}{\numberline {10}{\ignorespaces silenceThreshold parameter sweep results (accuracy, F score and recall)}}{19}{figure.4.10}
+\contentsline {figure}{\numberline {11}{\ignorespaces alpha parameter sweep results (accuracy, F score and recall)}}{20}{figure.4.11}
+\contentsline {figure}{\numberline {12}{\ignorespaces threshold parameter sweep results (accuracy, F score and recall)}}{20}{figure.4.12}
+\contentsline {figure}{\numberline {13}{\ignorespaces differentialThreshold parameter sweep results (accuracy, F score and recall)}}{21}{figure.4.13}
+\contentsline {figure}{\numberline {14}{\ignorespaces energyThreshold parameter sweep results (accuracy, F score and recall)}}{22}{figure.4.14}
+\contentsline {figure}{\numberline {15}{\ignorespaces minimumDuration parameter sweep results (accuracy, F score and recall)}}{22}{figure.4.15}
+\contentsline {figure}{\numberline {16}{\ignorespaces frameSize parameter sweep results (accuracy, F score and recall)}}{23}{figure.4.16}
+\contentsline {figure}{\numberline {17}{\ignorespaces threshold parameter sweep results (accuracy, F score and recall)}}{23}{figure.4.17}
 \addvspace {10\p@ }

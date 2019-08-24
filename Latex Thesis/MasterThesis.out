@@ -15,10 +15,10 @@
 \BOOKMARK [0][-]{chapter.4}{Results}{}% 15
 \BOOKMARK [1][-]{section.4.1}{Hum detection evaluation}{chapter.4}% 16
 \BOOKMARK [1][-]{section.4.2}{Clicks detection evaluation}{chapter.4}% 17
-\BOOKMARK [0][-]{chapter.5}{Discussion}{}% 18
-\BOOKMARK [1][-]{section.5.1}{Discussion}{chapter.5}% 19
-\BOOKMARK [1][-]{section.5.2}{Conclusions}{chapter.5}% 20
-\BOOKMARK [0][-]{section*.1}{List of Figures}{}% 21
-\BOOKMARK [0][-]{section*.2}{List of Tables}{}% 22
-\BOOKMARK [0][-]{chapter.1}{First Appendix}{}% 23
-\BOOKMARK [0][-]{chapter.2}{Second Appendix}{}% 24
+\BOOKMARK [1][-]{section.4.3}{Noise bursts detection evaluation}{chapter.4}% 18
+\BOOKMARK [1][-]{section.4.4}{Saturation detection evaluation}{chapter.4}% 19
+\BOOKMARK [1][-]{section.4.5}{Silence detection evaluation}{chapter.4}% 20
+\BOOKMARK [0][-]{chapter.5}{Conclusions}{}% 21
+\BOOKMARK [0][-]{section*.1}{List of Figures}{}% 22
+\BOOKMARK [0][-]{section*.2}{List of Tables}{}% 23
+\BOOKMARK [0][-]{chapter*.3}{Bibliography}{}% 24

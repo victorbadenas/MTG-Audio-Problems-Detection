@@ -477,7 +477,7 @@ class gridSearch():
                 FscoreArr.append((1 + Fbeta**2) * precision * recall / (Fbeta**2 * precision + recall))
         u.plot("./results/noisethreshold.png", precision=precisionArr, recall=recallArr, Fscore=FscoreArr, x_values=threshold)
 
-        alpha = [i/10 for i in range(1,10)]
+        alpha = [float(i)/10 for i in range(1,10)]
         precisionArr = []
         recallArr = []
         FscoreArr = []
