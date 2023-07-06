@@ -1,5 +1,5 @@
 essentia
 pydub==0.23.0
 numpy==1.16.3
-scipy==1.2.0
+scipy==1.10.0
 matplotlib==3.0.3
